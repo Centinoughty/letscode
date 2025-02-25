@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
-from utils.security import get_user_by_email, get_user_by_username, hash_password
-from schemas.user import UserCreate
+from utils.security import get_user_by_email, get_user_by_username, hash_password, verify_password, create_access_token
+from schemas.user import UserCreate, UserLogin
 from models.user import User
 
 def register_user(db: Session, user: UserCreate):
@@ -27,3 +27,19 @@ def register_user(db: Session, user: UserCreate):
   db.refresh(db_user)
   
   return db_user
+
+def authenticate_user(db: Session, email: str, password):
+  user = get_user_by_email(db, email)
+  if not user:
+    raise HTTPException(status_code=401, detail="User not found")
+  
+  if not verify_password(password, user.password):
+    raise HTTPException(status_code=401, detail="Incorrect password")
+  
+  return user
+
+def login_user(db: Session, user: UserLogin):
+  user = authenticate_user(db, user.email, user.password)
+  data = {"sub": user.email, "id": user.id}
+  access_token = create_access_token(data)
+  return {"token": access_token, "token_type": "bearer"}
