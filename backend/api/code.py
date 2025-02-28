@@ -13,5 +13,7 @@ def create(code: CodeCreate, db: Session = Depends(get_db), token: str = Depends
   try:
     code = create_code(db, code, token)
     return {"code_id": code.id}
+  except HTTPException as err:
+    raise err
   except:
     raise HTTPException(status_code=500, detail="Internal Server Error")

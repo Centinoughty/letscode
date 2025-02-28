@@ -11,12 +11,16 @@ def register(user: UserCreate, db:Session = Depends(get_db)):
   try:
     register_user(db, user)
     return {"message": "User registered"}
-  except:
+  except HTTPException as err:
+    raise err
+  except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
   try:
     return login_user(db, user)
-  except:
+  except HTTPException as err:
+    raise err
+  except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
