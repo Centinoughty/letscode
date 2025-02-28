@@ -1,24 +1,16 @@
 from fastapi import HTTPException
+import uuid
 
 from sqlalchemy.orm import Session
 from schemas.code import CodeCreate
-from utils.security import decode_access_token
-from crud.user import get_user_by_email
+from utils.security import get_user_from_token
 
 from models.code import Code
 
 def create_code(db: Session, code: CodeCreate, token: str):
-  payload = decode_access_token(token)
-  if payload is None:
-    raise HTTPException(status_code=401, detail="Invalid or expired token")
-  
-  user_email = payload.get("sub")
-  if not user_email:
-    raise HTTPException(status_code=401, detail="Invalid token data")
-  
-  user = get_user_by_email(db, user_email)
+  user = get_user_from_token(db, token)
   if not user:
-    raise HTTPException(status_code=404, detail="User not found")
+    raise HTTPException(status_code=401, detail="Invalid token")
   
   db_code = Code(
     file_name=code.file_name,
@@ -32,3 +24,18 @@ def create_code(db: Session, code: CodeCreate, token: str):
   db.refresh(db_code)
   
   return db_code
+
+def delete_code(db: Session, code_id: uuid.UUID, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="Invalid token")
+  
+  code = db.query(Code).filter(Code.id == code_id).first()
+  if not code:
+    raise HTTPException(status_code=404, detail="Code not found")
+  
+  if code.owner_id != user.id:
+    raise HTTPException(status_code=403, detail="Not authoruized")
+  
+  db.delete(code)
+  db.commit()

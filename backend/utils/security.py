@@ -37,3 +37,15 @@ def decode_access_token(token: str):
     return payload
   except:
     return None
+  
+def get_user_from_token(db: Session, token: str):
+  payload = decode_access_token(token)
+  if payload is None:
+    return None
+  
+  user_email = payload.get("sub")
+  if not user_email:
+    return None
+  
+  user = get_user_by_email(db, user_email)
+  return user
