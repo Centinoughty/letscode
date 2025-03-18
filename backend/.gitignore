@@ -32,5 +32,8 @@ archive.zip
 # environment vaiables
 .env
 
+# test directory
+test
+
 # server uploads
 uploads
