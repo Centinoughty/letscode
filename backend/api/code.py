@@ -32,8 +32,8 @@ def delete(code_id: str, db: Session = Depends(get_db), token: str = Depends(oau
 @router.put("/{code_id}/save")
 def save(code_id: uuid.UUID, code: CodeInput, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
-    code_id = save_code(db, code_id, code.code_input, token)
-    return {"code_id": code_id}
+    response = save_code(db, code_id, code.code_input, token)
+    return response
   except HTTPException as err:
     raise err
   except Exception as err:

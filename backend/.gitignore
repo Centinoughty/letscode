@@ -31,3 +31,6 @@ archive.zip
 
 # environment vaiables
 .env
+
+# server uploads
+uploads
