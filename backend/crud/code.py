@@ -3,12 +3,13 @@ import docker
 import uuid
 import os
 import shutil
-import time
 
 from sqlalchemy.orm import Session
 from schemas.code import CodeCreate
-from utils.security import get_user_from_token
+from utils.security import get_user_from_token, get_user_by_email
 from models.code import Code
+from models.collaborator import Collaborator
+from schemas.collaborator import CollaboratorCreate
 
 client = docker.from_env()
 
@@ -156,3 +157,47 @@ def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
     shutil.rmtree(temp_dir, ignore_errors=True)
 
   return {"output": output}
+
+# find the collaborator to a code
+def get_collaborator_for_code(db: Session, code_id: uuid.UUID, user_id: int):
+  return db.query(Collaborator).filter(
+    Collaborator.code_id == code_id,
+    Collaborator.user_id == user_id
+  ).first()
+
+# check the access level for the collaborator
+def get_access_level(db: Session, code_id: uuid.UUID, user_id: int):
+  collaborator = get_collaborator_for_code(db, code_id, user_id)
+  if not collaborator:
+    return None
+
+  return collaborator.access_level
+
+# Add a collaborator to a code(read, write)
+def add_collaborator(db: Session, code_id: str, collaborator: CollaboratorCreate, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  code = find_code(db, code_id)
+  if not code:
+    raise HTTPException(status_code=404, detail="Code not found")
+  
+  if code.owner_id != user.id:
+    raise HTTPException(status_code=403, detail="Not authorized")
+  
+  user_id = get_user_by_email(db, collaborator.user_email).id
+  existing_collaborator = get_collaborator_for_code(db, code_id, user_id)
+  if existing_collaborator:
+    raise HTTPException(status_code=400, detail="User is already added as a collaborator")
+  
+  new_collaborator = Collaborator(
+    code_id=code_id,
+    user_id=user_id,
+    access_level=collaborator.access_level
+  )
+  
+  db.add(new_collaborator)
+  db.commit()
+  db.refresh(new_collaborator)
+  return new_collaborator

@@ -4,7 +4,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import get_db
 from schemas.code import CodeCreate, CodeInput, CodeRun
-from crud.code import create_code, delete_code, run_code, save_code
+from schemas.collaborator import CollaboratorCreate
+from crud.code import create_code, delete_code, run_code, save_code, add_collaborator
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -48,3 +49,13 @@ def run(code_id: str, code: CodeRun, db: Session = Depends(get_db), token: str =
     raise err
   except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/{code_id}/collaborators/add")
+def add_collaborator_to_code(code_id: uuid.UUID, collaborator: CollaboratorCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+  try:
+    collaborator = add_collaborator(db, code_id, collaborator, token)
+    return {"message": "Collaborator added succesfully"}
+  except HTTPException as err:
+    raise err
+  except Exception as err:
+    raise HTTPException(status_code=500, detial="Internal Server Error")
