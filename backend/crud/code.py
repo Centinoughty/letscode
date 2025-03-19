@@ -16,6 +16,8 @@ client = docker.from_env()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+### -- HELPER FUNCTIONS --
 def find_code(db: Session, code_id: uuid.UUID):
   return db.query(Code).filter(Code.id == code_id).first()
 
@@ -26,6 +28,8 @@ def get_file_path(code_id: uuid.UUID, language: str):
 
   return os.path.join(UPLOAD_DIR, f"{code_id}.{ext}")
 
+
+### FUNCTION TO CREATE A CODE
 def create_code(db: Session, code: CodeCreate, token: str):
   # check if user is authorized
   user = get_user_from_token(db, token)
@@ -55,6 +59,8 @@ def create_code(db: Session, code: CodeCreate, token: str):
 
   return db_code
 
+
+### FUNCTION TO DELETE A CODE
 def delete_code(db: Session, code_id: uuid.UUID, token: str):
   user = get_user_from_token(db, token)
   if not user:
@@ -74,6 +80,7 @@ def delete_code(db: Session, code_id: uuid.UUID, token: str):
   db.commit()
   return
 
+### FUNTION TO SAVE A CODE
 def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
   user = get_user_from_token(db, token)
   if not user:
@@ -91,6 +98,8 @@ def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
 
   return {"code_id": code.id}
 
+
+### FUNCTION TO RUN A CODE
 def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
   # check for  the user
   user = get_user_from_token(db, token)

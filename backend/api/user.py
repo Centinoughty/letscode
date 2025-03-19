@@ -6,6 +6,7 @@ from crud.user import register_user, login_user
 
 router = APIRouter()
 
+# register a user
 @router.post("/register")
 def register(user: UserCreate, db:Session = Depends(get_db)):
   try:
@@ -16,6 +17,8 @@ def register(user: UserCreate, db:Session = Depends(get_db)):
   except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+# login a user
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
   try:

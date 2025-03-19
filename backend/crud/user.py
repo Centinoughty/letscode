@@ -5,6 +5,7 @@ from utils.security import get_user_by_email, get_user_by_username, hash_passwor
 from schemas.user import UserCreate, UserLogin
 from models.user import User
 
+# FUNTION TO REGISTER A USER
 def register_user(db: Session, user: UserCreate):
   existing_email = get_user_by_email(db, user.email)
   if existing_email:
@@ -28,6 +29,8 @@ def register_user(db: Session, user: UserCreate):
   
   return db_user
 
+
+# FUNCTION TO AUTHENTICATE A USER
 def authenticate_user(db: Session, email: str, password):
   user = get_user_by_email(db, email)
   if not user:
@@ -38,6 +41,8 @@ def authenticate_user(db: Session, email: str, password):
   
   return user
 
+
+# FUNCTION TO LOGIN A USER
 def login_user(db: Session, user: UserLogin):
   user = authenticate_user(db, user.email, user.password)
   data = {"sub": user.email, "id": user.id}

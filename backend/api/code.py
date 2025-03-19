@@ -10,6 +10,7 @@ from crud.code import create_code, delete_code, run_code, save_code, add_collabo
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+# create a code
 @router.post("/create")
 def create(code: CodeCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
@@ -20,6 +21,8 @@ def create(code: CodeCreate, db: Session = Depends(get_db), token: str = Depends
   except:
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+# delete a code
 @router.delete("/{code_id}")
 def delete(code_id: str, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
@@ -30,6 +33,8 @@ def delete(code_id: str, db: Session = Depends(get_db), token: str = Depends(oau
   except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+# save a code
 @router.put("/{code_id}/save")
 def save(code_id: uuid.UUID, code: CodeInput, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
@@ -41,6 +46,8 @@ def save(code_id: uuid.UUID, code: CodeInput, db: Session = Depends(get_db), tok
     print(err)
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+# run a code
 @router.post("/run/{code_id}")
 def run(code_id: str, code: CodeRun, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
@@ -50,6 +57,8 @@ def run(code_id: str, code: CodeRun, db: Session = Depends(get_db), token: str =
   except Exception as err:
     raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
+# add a collaborator to a code
 @router.post("/{code_id}/collaborators/add")
 def add_collaborator_to_code(code_id: uuid.UUID, collaborator: CollaboratorCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
