@@ -4,8 +4,8 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import get_db
 from schemas.code import CodeCreate, CodeInput, CodeRun
-from schemas.collaborator import CollaboratorCreate
-from crud.code import create_code, delete_code, run_code, save_code, add_collaborator
+from schemas.collaborator import CollaboratorCreate, CollaboratorRemove
+from crud.code import create_code, delete_code, run_code, save_code, add_collaborator, remove_collaborator, update_access_level
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -68,3 +68,27 @@ def add_collaborator_to_code(code_id: uuid.UUID, collaborator: CollaboratorCreat
     raise err
   except Exception as err:
     raise HTTPException(status_code=500, detial="Internal Server Error")
+
+
+# removing a colaborator
+@router.delete("/{code_id}/collaborators/remove")
+def remove_collaborator_from_code(code_id: uuid.UUID, user: CollaboratorRemove, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+  try:
+    response = remove_collaborator(db, code_id, user.user_email, token)
+    return response
+  except HTTPException as err:
+    raise err
+  except Exception as err:
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+# update access level of collaborator
+@router.put("/{code_id}/collaborators/update")
+def update_collab_access_level(code_id: uuid.UUID, user: CollaboratorCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+  try:
+    response = update_access_level(db, code_id, user, token)
+    return response
+  except HTTPException as err:
+    raise err
+  except Exception as err:
+    raise HTTPException(status_code=500, detail="Internal Server Error")

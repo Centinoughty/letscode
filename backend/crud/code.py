@@ -182,7 +182,7 @@ def get_access_level(db: Session, code_id: uuid.UUID, user_id: int):
 
   return collaborator.access_level
 
-# Add a collaborator to a code(read, write)
+# FUNCTION TO ADD A COLLABORATOR(READ, WRITE)
 def add_collaborator(db: Session, code_id: str, collaborator: CollaboratorCreate, token: str):
   user = get_user_from_token(db, token)
   if not user:
@@ -195,7 +195,14 @@ def add_collaborator(db: Session, code_id: str, collaborator: CollaboratorCreate
   if code.owner_id != user.id:
     raise HTTPException(status_code=403, detail="Not authorized")
   
-  user_id = get_user_by_email(db, collaborator.user_email).id
+  collab_user = get_user_by_email(db, collaborator.user_email)
+  if not collab_user:
+    raise HTTPException(status_code=400, detail="User not found")
+  
+  if collab_user.id == code.owner_id:
+    raise HTTPException(status_code=400, detail="Owner cannot be a collaborator")
+  
+  user_id = collab_user.id
   existing_collaborator = get_collaborator_for_code(db, code_id, user_id)
   if existing_collaborator:
     raise HTTPException(status_code=400, detail="User is already added as a collaborator")
@@ -210,3 +217,60 @@ def add_collaborator(db: Session, code_id: str, collaborator: CollaboratorCreate
   db.commit()
   db.refresh(new_collaborator)
   return new_collaborator
+
+
+# FUNCTION TO REMOVE A COLLABORATOR
+def remove_collaborator(db: Session, code_id: uuid.UUID, user_email: str, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  code = find_code(db, code_id)
+  if not code:
+    raise HTTPException(status_code=404, detail="Code not found")
+  
+  if code.owner_id != user.id:
+    raise HTTPException(status_code=403, detail="Not authorized")
+  
+  collab_user = get_user_by_email(db, user_email)
+  if not collab_user:
+    raise HTTPException(status_code=400, detail="User not found")
+  
+  user_id = collab_user.id
+  existing_collaborator = get_collaborator_for_code(db, code_id, user_id)
+  if not existing_collaborator:
+    raise HTTPException(status_code=404, detail="Collaborator does not exist")
+  
+  db.delete(existing_collaborator)
+  db.commit()
+  return {"message": "Collaborator removed successfully"}
+
+
+# FUNCTION TO UPDATE ACCESS LEVEL OF COLLABORATOR
+def update_access_level(db: Session, code_id: uuid.UUID, collaborator: CollaboratorCreate, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  code = find_code(db, code_id)
+  if not code:
+    raise HTTPException(status_code=404, detail="Code not found")
+  
+  if code.owner_id != user.id:
+    raise HTTPException(status_code=403, detail="Not authorized")
+  
+  collab_user = get_user_by_email(db, collaborator.user_email)
+  if not collab_user:
+    raise HTTPException(status_code=400, detail="User not found")
+  
+  user_id = collab_user.id
+  existing_collaborator = get_collaborator_for_code(db, code_id, user_id)
+  if not existing_collaborator:
+    raise HTTPException(status_code=404, detail="Collaborator does not exist")
+
+  existing_collaborator.access_level = collaborator.access_level
+  
+  db.commit()
+  db.refresh(existing_collaborator)
+  
+  return {"message": "Collaborator access level updated successfully"}
