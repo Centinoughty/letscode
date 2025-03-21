@@ -4,7 +4,7 @@ import LinkButton from "../Button/LinkButton";
 export default function Navbar() {
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full px-[15%] py-3 flex justify-between items-center text-white border-b border-gray-500/40 backdrop-blur-3xl">
+      <nav className="fixed top-0 left-0 w-full px-[15%] py-3 flex justify-between items-center text-white border-b border-gray-500/40 backdrop-blur-[5px]">
         <div>
           <Link href="/" className="font-semibold text-xl">
             Let'sCode
