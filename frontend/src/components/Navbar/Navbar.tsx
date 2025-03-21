@@ -10,7 +10,7 @@ export default function Navbar() {
             Let'sCode
           </Link>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-4">
           <Link href="">Features</Link>
           <Link href="">Testimonials</Link>
           <Link href="">Pricing</Link>
