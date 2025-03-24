@@ -27,7 +27,10 @@ def register_user(db: Session, user: UserCreate):
   db.commit()
   db.refresh(db_user)
   
-  return db_user
+  data = {"email": db_user.email, "id": db_user.id}
+  access_token = create_access_token(data)
+  
+  return {"token": access_token, "token_type": "bearer", "user": data}
 
 
 # FUNCTION TO AUTHENTICATE A USER
@@ -45,6 +48,6 @@ def authenticate_user(db: Session, email: str, password):
 # FUNCTION TO LOGIN A USER
 def login_user(db: Session, user: UserLogin):
   user = authenticate_user(db, user.email, user.password)
-  data = {"sub": user.email, "id": user.id}
+  data = {"email": user.email, "id": user.id}
   access_token = create_access_token(data)
-  return {"token": access_token, "token_type": "bearer"}
+  return {"token": access_token, "token_type": "bearer", "user": data}

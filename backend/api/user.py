@@ -10,8 +10,8 @@ router = APIRouter()
 @router.post("/register")
 def register(user: UserCreate, db:Session = Depends(get_db)):
   try:
-    register_user(db, user)
-    return {"message": "User registered"}
+    response = register_user(db, user)
+    return {"message": "User registered", "token": response["token"], "token_type": response["token_type"], "user": response["user"]}
   except HTTPException as err:
     raise err
   except Exception as err:
@@ -22,7 +22,8 @@ def register(user: UserCreate, db:Session = Depends(get_db)):
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
   try:
-    return login_user(db, user)
+    response = login_user(db, user)
+    return {"message": "Login successful", "token": response["token"], "token_type": response["token_type"], "user": response["user"]}
   except HTTPException as err:
     raise err
   except Exception as err:

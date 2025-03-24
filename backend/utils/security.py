@@ -43,7 +43,7 @@ def get_user_from_token(db: Session, token: str):
   if payload is None:
     return None
   
-  user_email = payload.get("sub")
+  user_email = payload.get("email")
   if not user_email:
     return None
   
