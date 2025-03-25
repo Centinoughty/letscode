@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.code import CodeCreate, CodeInput, CodeRun
 from schemas.collaborator import CollaboratorCreate, CollaboratorRemove
-from crud.code import create_code, delete_code, run_code, save_code, add_collaborator, remove_collaborator, update_access_level
+from crud.code import create_code, delete_code, run_code, save_code, add_collaborator, remove_collaborator, update_access_level, get_collaborated_codes, get_owned_codes
+from utils.security import get_user_from_token
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -52,6 +53,26 @@ def save(code_id: uuid.UUID, code: CodeInput, db: Session = Depends(get_db), tok
 def run(code_id: str, code: CodeRun, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
     return run_code(db, code_id, code.stdin, token)
+  except HTTPException as err:
+    raise err
+  except Exception as err:
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+# get all codes
+@router.get("/all")
+def get_all_codes(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+  try:
+    user = get_user_from_token(db, token)
+    if not user:
+      raise HTTPException(status_code=401, detail="No access")
+    
+    owned_codes = get_owned_codes(db, token)
+    collaborated_codes = get_collaborated_codes(db, token)
+    return {
+      "owned_codes": owned_codes,
+      "collaborated_codes": collaborated_codes
+    }
   except HTTPException as err:
     raise err
   except Exception as err:

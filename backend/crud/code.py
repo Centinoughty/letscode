@@ -71,7 +71,7 @@ def delete_code(db: Session, code_id: uuid.UUID, token: str):
     raise HTTPException(status_code=404, detail="Code not found")
 
   if code.owner_id != user.id:
-    raise HTTPException(status_code=403, detail="Not authoruized")
+    raise HTTPException(status_code=403, detail="Not authorized")
 
   if os.path.exists(code.code_path):
     os.remove(code.code_path)
@@ -91,7 +91,7 @@ def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
     raise HTTPException(status_code=404, detail="Code not found")
 
   if code.owner_id != user.id:
-    raise HTTPException(status_code=403, detail="Not authoruized")
+    raise HTTPException(status_code=403, detail="Not authorized")
 
   with open(code.code_path, "w") as f:
     f.write(code_input)
@@ -143,7 +143,7 @@ def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
     else:
       raise HTTPException(status_code=400, detail="Unsupported language")
 
-    # cerate a container
+    # create a container
     container = client.containers.run(
       image=image,
       command=["sh", "-c", cmd],
@@ -274,3 +274,23 @@ def update_access_level(db: Session, code_id: uuid.UUID, collaborator: Collabora
   db.refresh(existing_collaborator)
   
   return {"message": "Collaborator access level updated successfully"}
+
+
+### -- FUNCTION TO GET CODES OWNED BY --
+def get_owned_codes(db: Session, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  all_codes = db.query(Code).filter(Code.owner_id == user.id).all()
+  return all_codes
+
+
+### -- FUNCTION TO GET CODES COLLABORATED WITH --
+def get_collaborated_codes(db: Session, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  collaborated_codes = db.query(Code).join(Collaborator).filter(Collaborator.user_id == user.id).all()
+  return collaborated_codes
