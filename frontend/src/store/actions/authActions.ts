@@ -9,11 +9,12 @@ import {
   signupFailure,
   logout,
 } from "../reducers/authReducer";
+import { getAuthToken } from "@/util/security";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const fetchUser = () => async (dispatch: Dispatch) => {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
 
   if (!token) {
     console.log("Token not found");
