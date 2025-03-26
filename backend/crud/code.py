@@ -21,6 +21,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def find_code(db: Session, code_id: uuid.UUID):
   return db.query(Code).filter(Code.id == code_id).first()
 
+def get_collaborators(db: Session, code_id: uuid.UUID):
+  return db.query(Collaborator).filter(Collaborator.code_id == code_id).all()
+
 def get_file_path(code_id: uuid.UUID, language: str):
   ext = {"py": "py", "cpp": "cpp", "c": "c"}.get(language, None)
   if not ext:
@@ -97,6 +100,37 @@ def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
     f.write(code_input)
 
   return {"code_id": code.id}
+
+
+### FUNTION TO GET A CODE
+def get_code_data(db: Session, code_id: uuid.UUID, token: str):
+  user = get_user_from_token(db, token)
+  if not user:
+    raise HTTPException(status_code=401, detail="No access")
+  
+  code = find_code(db, code_id)
+  if not code:
+    raise HTTPException(status_code=404, detail="Code not found")
+  
+  if code.owner_id != user.id:
+    all_collaborators = get_collaborators(db, code_id)
+    if user.id not in [collab.user_id for collab in all_collaborators]:
+      raise HTTPException(status_code=403, detail="You do not permission to access the code")
+  
+  if not os.path.exists(code.code_path):
+    raise HTTPException(status_code=404, detail="Code file not found")
+  
+  try:
+    with open(code.code_path, "r") as f:
+      code_content = f.read()
+  except Exception as err:
+    raise HTTPException(status_code=500, detail="Failed to read code contents")
+    
+  return {
+    "code_id": str(code_id),
+    "owner_id": str(code.owner_id),
+    "code": code_content
+  }
 
 
 ### FUNCTION TO RUN A CODE
