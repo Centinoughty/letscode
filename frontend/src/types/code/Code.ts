@@ -1,5 +1,5 @@
 interface Code {
-  id: number;
+  id: string;
   fileName: string;
   codePath: string;
   language: string;

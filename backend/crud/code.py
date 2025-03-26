@@ -292,5 +292,5 @@ def get_collaborated_codes(db: Session, token: str):
   if not user:
     raise HTTPException(status_code=401, detail="No access")
   
-  collaborated_codes = db.query(Code).join(Collaborator).filter(Collaborator.user_id == user.id).all()
+  collaborated_codes = db.query(Code).join(Collaborator).filter(Collaborator.user_id == user.id, Collaborator.accepted == True).all()
   return collaborated_codes

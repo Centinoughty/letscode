@@ -2,13 +2,13 @@
 
 import axios from "axios";
 import { useState, useEffect } from "react";
-import useAuthToken from "./useAuthToken";
+import { getAuthToken } from "@/util/security";
 
 export default function useFetch<T>(endpoint: string, addToken = false) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const token = useAuthToken();
+  const token = getAuthToken();
 
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 

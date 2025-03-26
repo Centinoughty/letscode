@@ -32,6 +32,7 @@ export const fetchUser = () => async (dispatch: Dispatch) => {
     dispatch(loginSuccess({ ...response.data, token }));
     // console.log("User fetched successfully");
   } catch (error) {
+    // console.log(error)
     dispatch(loginFailure("Failed to fetch user"));
   }
 };

@@ -16,7 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 def create(code: CodeCreate, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
     code = create_code(db, code, token)
-    return {"code_id": code.id}
+    return {"code": code}
   except HTTPException as err:
     raise err
   except:
