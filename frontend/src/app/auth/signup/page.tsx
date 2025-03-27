@@ -23,6 +23,8 @@ export default function SignupPage() {
     event.preventDefault();
     // console.log(formData);
     dispatch(SignupAction(formData));
+
+    setFormData({ username: "", email: "", password: "" });
   }
 
   return (

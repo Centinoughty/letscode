@@ -22,6 +22,8 @@ export default function LoginPage() {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     dispatch(loginAction(formData));
+
+    setFormData({ email: "", password: "" });
   }
 
   return (
