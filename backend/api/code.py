@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.code import CodeCreate, CodeInput, CodeRun
 from schemas.collaborator import CollaboratorCreate, CollaboratorRemove
-from crud.code import create_code, delete_code, run_code, save_code, add_collaborator, remove_collaborator, update_access_level, get_collaborated_codes, get_owned_codes, get_code_data
+from crud.code import create_code, delete_code, run_code, save_code, add_collaborator, remove_collaborator, update_access_level, get_collaborated_codes, get_owned_codes, get_code_data, get_access_level
 from utils.security import get_user_from_token
 
 router = APIRouter()
@@ -107,6 +107,22 @@ def add_collaborator_to_code(code_id: uuid.UUID, collaborator: CollaboratorCreat
 def remove_collaborator_from_code(code_id: uuid.UUID, user: CollaboratorRemove, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
     response = remove_collaborator(db, code_id, user.user_email, token)
+    return response
+  except HTTPException as err:
+    raise err
+  except Exception as err:
+    raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+# get the access level of a collaborator
+@router.get("/{code_id}/collaborators/accss-level")
+def get_collaborator_access_level(code_id: uuid.UUID, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+  try:
+    user = get_user_from_token(db, token)
+    if not user:
+      raise HTTPException(status_code=40, detail="No access")
+
+    response = get_access_level(db, code_id, user.id)
     return response
   except HTTPException as err:
     raise err

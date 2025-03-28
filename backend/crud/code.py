@@ -21,8 +21,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def find_code(db: Session, code_id: uuid.UUID):
   return db.query(Code).filter(Code.id == code_id).first()
 
+
 def get_collaborators(db: Session, code_id: uuid.UUID):
   return db.query(Collaborator).filter(Collaborator.code_id == code_id).all()
+
 
 def get_file_path(code_id: uuid.UUID, language: str):
   ext = {"py": "py", "cpp": "cpp", "c": "c"}.get(language, None)
@@ -30,6 +32,35 @@ def get_file_path(code_id: uuid.UUID, language: str):
     raise HTTPException(status_code=400, detail="unsupported language")
 
   return os.path.join(UPLOAD_DIR, f"{code_id}.{ext}")
+
+
+# find the collaborator to a code
+def get_collaborator_for_code(db: Session, code_id: uuid.UUID, user_id: int):
+  return db.query(Collaborator).filter(
+    Collaborator.code_id == code_id,
+    Collaborator.user_id == user_id
+  ).first()
+
+
+# check the access level for the collaborator
+def get_access_level(db: Session, code_id: uuid.UUID, user_id: int):
+  if (is_admin(db, code_id, user_id)):
+    return "w"
+
+  collaborator = get_collaborator_for_code(db, code_id, user_id)
+  if not collaborator:
+    return None
+
+  return collaborator.access_level
+
+
+# check if the user is the owner
+def is_admin(db: Session, code_id: uuid.UUID, user_id: int):
+  code = find_code(db, code_id)
+  if not code:
+    return False
+  
+  return code.owner_id == user_id
 
 
 ### FUNCTION TO CREATE A CODE
@@ -83,6 +114,7 @@ def delete_code(db: Session, code_id: uuid.UUID, token: str):
   db.commit()
   return
 
+
 ### FUNTION TO SAVE A CODE
 def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
   user = get_user_from_token(db, token)
@@ -94,7 +126,9 @@ def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
     raise HTTPException(status_code=404, detail="Code not found")
 
   if code.owner_id != user.id:
-    raise HTTPException(status_code=403, detail="Not authorized")
+    collaborator_access_level = get_access_level(db, code_id, user.id)
+    if collaborator_access_level != "w":
+      raise HTTPException(status_code=403, detail="Not authorized")
 
   with open(code.code_path, "w") as f:
     f.write(code_input)
@@ -146,7 +180,9 @@ def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
     raise HTTPException(status_code=404, detail="Code not found")
   
   if code.owner_id != user.id:
-    raise HTTPException(status_code=403, detail="Not authorized")
+    collab_access_level = get_access_level(db, code_id, user.id)
+    if collab_access_level not in ["r", "w"]:
+      raise HTTPException(status_code=403, detail="Not authorized")
 
   try:
     # create temporary direc  
@@ -201,20 +237,6 @@ def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
 
   return {"output": output}
 
-# find the collaborator to a code
-def get_collaborator_for_code(db: Session, code_id: uuid.UUID, user_id: int):
-  return db.query(Collaborator).filter(
-    Collaborator.code_id == code_id,
-    Collaborator.user_id == user_id
-  ).first()
-
-# check the access level for the collaborator
-def get_access_level(db: Session, code_id: uuid.UUID, user_id: int):
-  collaborator = get_collaborator_for_code(db, code_id, user_id)
-  if not collaborator:
-    return None
-
-  return collaborator.access_level
 
 # FUNCTION TO ADD A COLLABORATOR(READ, WRITE)
 def add_collaborator(db: Session, code_id: str, collaborator: CollaboratorCreate, token: str):
