@@ -45,7 +45,7 @@ def get_collaborator_for_code(db: Session, code_id: uuid.UUID, user_id: int):
 # check the access level for the collaborator
 def get_access_level(db: Session, code_id: uuid.UUID, user_id: int):
   if (is_admin(db, code_id, user_id)):
-    return "w"
+    return "write"
 
   collaborator = get_collaborator_for_code(db, code_id, user_id)
   if not collaborator:
@@ -127,7 +127,7 @@ def save_code(db: Session, code_id: uuid.UUID, code_input: str, token: str):
 
   if code.owner_id != user.id:
     collaborator_access_level = get_access_level(db, code_id, user.id)
-    if collaborator_access_level != "w":
+    if collaborator_access_level != "write":
       raise HTTPException(status_code=403, detail="Not authorized")
 
   with open(code.code_path, "w") as f:
@@ -181,7 +181,7 @@ def run_code(db: Session, code_id: uuid.UUID, stdin: str, token: str):
   
   if code.owner_id != user.id:
     collab_access_level = get_access_level(db, code_id, user.id)
-    if collab_access_level not in ["r", "w"]:
+    if collab_access_level not in ["read", "write"]:
       raise HTTPException(status_code=403, detail="Not authorized")
 
   try:

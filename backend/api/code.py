@@ -99,7 +99,8 @@ def add_collaborator_to_code(code_id: uuid.UUID, collaborator: CollaboratorCreat
   except HTTPException as err:
     raise err
   except Exception as err:
-    raise HTTPException(status_code=500, detial="Internal Server Error")
+    print(err)
+    raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 # removing a colaborator
@@ -115,7 +116,7 @@ def remove_collaborator_from_code(code_id: uuid.UUID, user: CollaboratorRemove, 
 
 
 # get the access level of a collaborator
-@router.get("/{code_id}/collaborators/accss-level")
+@router.get("/{code_id}/collaborators/access-level")
 def get_collaborator_access_level(code_id: uuid.UUID, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
   try:
     user = get_user_from_token(db, token)
