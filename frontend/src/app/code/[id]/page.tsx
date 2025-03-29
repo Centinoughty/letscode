@@ -2,7 +2,7 @@
 
 import io from "socket.io-client";
 import useFetch from "@/hooks/useFetch";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { getAuthToken } from "@/util/security";
 import axios from "axios";
@@ -13,10 +13,13 @@ const socket = io(SOCKET_SERVER, {
 });
 
 export default function Editor() {
+  const pathname = usePathname();
   const { id } = useParams<{ id: string }>();
+
   const [code, setCode] = useState<string>("");
   const [permission, setPermission] = useState<"read" | "write" | null>(null);
 
+  // temporary
   const [email, setEmail] = useState<string>("");
   const [perms, setPerms] = useState<"read" | "write" | null>(null);
 
@@ -41,11 +44,18 @@ export default function Editor() {
     });
 
     return () => {
+      socket.emit("leave-room", { roomId: id });
       socket.off("code-update");
       socket.off("permission-update");
       socket.off("error");
     };
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    return () => {
+      socket.emit("leave-room", { roomId: id });
+    };
+  }, [pathname]);
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (permission !== "write") {
@@ -64,7 +74,7 @@ export default function Editor() {
   }, [data]);
 
   async function addUserToCode(event: FormEvent) {
-    event.preventDefault()
+    event.preventDefault();
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/code/${id}/collaborators/add`,
@@ -81,13 +91,17 @@ export default function Editor() {
         <form onSubmit={addUserToCode}>
           <input
             type="email"
+            placeholder="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
           <input
             type="text"
             value={perms ?? ""}
-            onChange={(event) => setPerms(event.target.value as "read" | "write")}
+            placeholder="permission"
+            onChange={(event) =>
+              setPerms(event.target.value as "read" | "write")
+            }
           />
           <button type="submit">Add</button>
         </form>
