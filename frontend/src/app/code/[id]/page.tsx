@@ -1,7 +1,6 @@
 "use client";
 
 import io from "socket.io-client";
-import useFetch from "@/hooks/useFetch";
 import { useParams, usePathname } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { getAuthToken } from "@/util/security";
@@ -23,10 +22,11 @@ export default function Editor() {
   const [email, setEmail] = useState<string>("");
   const [perms, setPerms] = useState<"read" | "write" | null>(null);
 
-  const { data, loading, error } = useFetch<CodeResponse>(
-    `api/code/${id}`,
-    true
-  );
+  // -- -- FUNCTION CALL TO FETCH CODE FROM BACKEND -- -- 
+  // const { data, loading, error } = useFetch<CodeResponse>(
+  //   `api/code/${id}`,
+  //   true
+  // );
 
   useEffect(() => {
     socket.emit("join-room", { roomId: id });
@@ -67,11 +67,12 @@ export default function Editor() {
     socket.emit("code-change", { roomId: id, code: newCode });
   };
 
-  useEffect(() => {
-    if (data?.code) {
-      setCode(data.code);
-    }
-  }, [data]);
+  // -- effect change when data updates --
+  // useEffect(() => {
+  //   if (data?.code) {
+  //     setCode(data.code);
+  //   }
+  // }, [data]);
 
   async function addUserToCode(event: FormEvent) {
     event.preventDefault();

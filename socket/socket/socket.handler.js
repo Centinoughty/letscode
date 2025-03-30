@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 const { authenticateUser } = require("../middlewares/auth.middleware");
 const { checkPermission } = require("../middlewares/permission.middleware");
 const {
@@ -6,6 +8,9 @@ const {
   removeUserFromRoom,
   removeUserFromAllRooms,
 } = require("./users.handler");
+const { BACKEND_URL } = require("../config/env");
+
+const ROOM_STATE = {};
 
 const setupSocket = (io) => {
   io.use(authenticateUser);
@@ -19,6 +24,21 @@ const setupSocket = (io) => {
 
       socket.join(roomId);
       socket.permission = permission;
+
+      if (!ROOM_STATE[roomId]) {
+        try {
+          const response = await axios.get(
+            `${BACKEND_URL}/api/code/${roomId}`,
+            { headers: { Authorization: `Bearer ${socket.user.token}` } }
+          );
+
+          ROOM_STATE[roomId] = response.data.code || "";
+        } catch (error) {
+          ROOM_STATE[roomId] = "";
+        }
+      }
+
+      socket.emit("code-update", ROOM_STATE[roomId]);
 
       addUserToRoom(roomId, socket.id);
       io.to(roomId).emit("active-users", {
@@ -35,8 +55,13 @@ const setupSocket = (io) => {
       socket.leave(roomId);
       removeUserFromRoom(roomId, socket.id);
 
+      const count = getActiveUsersCount(roomId);
+      if (count === 0) {
+        delete ROOM_STATE[roomId];
+      }
+
       io.to(roomId).emit("active-users", {
-        count: getActiveUsersCount(roomId),
+        count,
       });
     });
 
@@ -44,6 +69,8 @@ const setupSocket = (io) => {
       if (socket.permission !== "write") {
         return socket.emit("error", "Permission denied");
       }
+
+      ROOM_STATE[roomId] = code;
 
       socket.to(roomId).emit("code-update", code);
     });
