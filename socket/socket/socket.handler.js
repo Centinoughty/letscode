@@ -25,7 +25,7 @@ const setupSocket = (io) => {
       socket.join(roomId);
       socket.permission = permission;
 
-      if (!ROOM_STATE[roomId]) {
+      if (ROOM_STATE[roomId] === undefined) {
         try {
           const response = await axios.get(
             `${BACKEND_URL}/api/code/${roomId}`,
@@ -34,7 +34,7 @@ const setupSocket = (io) => {
 
           ROOM_STATE[roomId] = response.data.code || "";
         } catch (error) {
-          ROOM_STATE[roomId] = "";
+          ROOM_STATE[roomId] = null;
         }
       }
 
@@ -70,8 +70,11 @@ const setupSocket = (io) => {
         return socket.emit("error", "Permission denied");
       }
 
-      ROOM_STATE[roomId] = code;
+      if (code === "" && ROOM_STATE[roomId] !== "") {
+        return;
+      }
 
+      ROOM_STATE[roomId] = code;
       socket.to(roomId).emit("code-update", code);
     });
 

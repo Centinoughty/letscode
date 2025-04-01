@@ -5,6 +5,7 @@ import { useParams, usePathname } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { getAuthToken } from "@/util/security";
 import axios from "axios";
+import { runCode } from "@/lib/code";
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
 const socket = io(SOCKET_SERVER, {
@@ -17,12 +18,13 @@ export default function Editor() {
 
   const [code, setCode] = useState<string>("");
   const [permission, setPermission] = useState<"read" | "write" | null>(null);
+  const [output, setOutput] = useState<string | null>(null);
 
   // temporary
   const [email, setEmail] = useState<string>("");
   const [perms, setPerms] = useState<"read" | "write" | null>(null);
 
-  // -- -- FUNCTION CALL TO FETCH CODE FROM BACKEND -- -- 
+  // -- -- FUNCTION CALL TO FETCH CODE FROM BACKEND -- --
   // const { data, loading, error } = useFetch<CodeResponse>(
   //   `api/code/${id}`,
   //   true
@@ -86,6 +88,11 @@ export default function Editor() {
     console.log(response.data);
   }
 
+  async function handleRun() {
+    const response = await runCode(id, "");
+    setOutput(response.output);
+  }
+
   return (
     <>
       <main>
@@ -114,6 +121,8 @@ export default function Editor() {
           id="code"
           disabled={permission !== "write"}
         ></textarea>
+        <button onClick={handleRun}>Run</button>
+        <p>{output}</p>
       </main>
     </>
   );

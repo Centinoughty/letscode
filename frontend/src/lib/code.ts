@@ -27,8 +27,22 @@ export const createCode = async (fileName: string, language: string) => {
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    console.log(response.data)
+    console.log(response.data);
     return response.data.code;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const runCode = async (codeId: string, stdin: string) => {
+  try {
+    const response = await axios.post(
+      `${BACKEND_URL}/api/code/run/${codeId}`,
+      { stdin: stdin },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    return response.data;
   } catch (error) {
     console.log(error);
   }
