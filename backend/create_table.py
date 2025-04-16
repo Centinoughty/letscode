@@ -5,4 +5,4 @@ from models.collaborator import Collaborator
 
 Base.metadata.create_all(bind=engine)
 
-print("All tables cerated succesfully")
+print("All tables created succesfully")
