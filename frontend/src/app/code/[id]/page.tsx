@@ -120,6 +120,7 @@ export default function Editor() {
           onChange={handleChange}
           id="code"
           disabled={permission !== "write"}
+          className="h-96"
         ></textarea>
         <button onClick={handleRun}>Run</button>
         <p>{output}</p>
