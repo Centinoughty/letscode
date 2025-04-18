@@ -32,13 +32,16 @@ const setupSocket = (io) => {
             { headers: { Authorization: `Bearer ${socket.user.token}` } }
           );
 
-          ROOM_STATE[roomId] = response.data.code || "";
+          ROOM_STATE[roomId] = {
+            code: response.data.code || "",
+            isSaved: true,
+          };
         } catch (error) {
-          ROOM_STATE[roomId] = null;
+          ROOM_STATE[roomId] = { code: null, isSaved: false };
         }
       }
 
-      socket.emit("code-update", ROOM_STATE[roomId]);
+      socket.emit("code-update", ROOM_STATE[roomId].code);
 
       addUserToRoom(roomId, socket.id);
       io.to(roomId).emit("active-users", {
@@ -56,7 +59,7 @@ const setupSocket = (io) => {
       removeUserFromRoom(roomId, socket.id);
 
       const count = getActiveUsersCount(roomId);
-      if (count === 0) {
+      if (count === 0 && ROOM_STATE[roomId]?.isSaved) {
         delete ROOM_STATE[roomId];
       }
 
@@ -74,8 +77,42 @@ const setupSocket = (io) => {
         return;
       }
 
-      ROOM_STATE[roomId] = code;
+      ROOM_STATE[roomId].code = code;
+      ROOM_STATE[roomId].isSaved = false;
+
       socket.to(roomId).emit("code-update", code);
+    });
+
+    socket.on("save-code", async ({ roomId }) => {
+      const roomData = ROOM_STATE[roomId];
+      if (!roomData) {
+        return socket.emit("save-error", "Room not found");
+      }
+
+      // check if user has permission to run code
+      if (socket.permission !== "write") {
+        return socket.emit("error", "Permission denied");
+      }
+
+      if (roomData.isSaved) {
+        return socket.emit("code saved");
+      }
+
+      try {
+        await axios.put(
+          `${BACKEND_URL}/api/code/${roomId}/save`,
+          { code_input: roomData.code },
+          { headers: { Authorization: `Bearer ${socket.user.token}` } }
+        );
+
+        roomData.isSaved = true;
+        io.to(roomId).emit("code-saved");
+
+        console.log(`DEBUG: code saved for room ${roomId}`);
+      } catch (error) {
+        console.log("Error saving code", error);
+        socket.emit("error", "Failed to save code");
+      }
     });
 
     socket.on("disconnect", () => {

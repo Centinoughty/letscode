@@ -10,6 +10,7 @@ import { runCode } from "@/lib/code";
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
 const socket = io(SOCKET_SERVER, {
   auth: { token: getAuthToken() },
+  transports: ["websocket"],
 });
 
 export default function Editor() {
@@ -76,7 +77,7 @@ export default function Editor() {
   //   }
   // }, [data]);
 
-  async function addUserToCode(event: FormEvent) {
+  const addUserToCode = async (event: FormEvent) => {
     event.preventDefault();
 
     const response = await axios.post(
@@ -86,12 +87,20 @@ export default function Editor() {
     );
 
     console.log(response.data);
-  }
+  };
 
-  async function handleRun() {
+  const handleRun = async () => {
     const response = await runCode(id, "");
     setOutput(response.output);
-  }
+  };
+
+  const saveCode = () => {
+    if (permission !== "write") {
+      return;
+    }
+
+    socket.emit("save-code", { roomId: id });
+  };
 
   return (
     <>
@@ -123,6 +132,7 @@ export default function Editor() {
           className="h-96"
         ></textarea>
         <button onClick={handleRun}>Run</button>
+        <button onClick={saveCode}>Save</button>
         <p>{output}</p>
       </main>
     </>
