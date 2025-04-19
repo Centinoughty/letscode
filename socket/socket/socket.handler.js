@@ -1,4 +1,5 @@
 const axios = require("axios");
+const Y = require("yjs");
 
 const { authenticateUser } = require("../middlewares/auth.middleware");
 const { checkPermission } = require("../middlewares/permission.middleware");
@@ -26,62 +27,82 @@ const setupSocket = (io) => {
       socket.permission = permission;
 
       if (ROOM_STATE[roomId] === undefined) {
+        const ydoc = new Y.Doc();
+
         try {
           const response = await axios.get(
             `${BACKEND_URL}/api/code/${roomId}`,
             { headers: { Authorization: `Bearer ${socket.user.token}` } }
           );
 
+          const initialCode = response.data.code || "";
+          const text = ydoc.getText("codetext");
+
+          if (text.length === 0) {
+            text.insert(0, initialCode);
+          }
+
+          // ydoc.getText("codetext").insert(0, initialCode);
+
+          // ROOM_STATE[roomId] = {
+          //   code: response.data.code || "",
+          //   isSaved: true,
+          // };
+
           ROOM_STATE[roomId] = {
-            code: response.data.code || "",
+            ydoc,
             isSaved: true,
           };
         } catch (error) {
-          ROOM_STATE[roomId] = { code: null, isSaved: false };
+          // ROOM_STATE[roomId] = { code: null, isSaved: false };
+          ROOM_STATE[roomId] = { code: ydoc, isSaved: false };
         }
       }
 
-      socket.emit("code-update", ROOM_STATE[roomId].code);
+      const { ydoc } = ROOM_STATE[roomId];
+      const stateUpdate = Y.encodeStateAsUpdate(ydoc);
+
+      // socket.emit("code-update", ROOM_STATE[roomId].code);
+
+      socket.emit("yjs-init", stateUpdate);
 
       addUserToRoom(roomId, socket.id);
       io.to(roomId).emit("active-users", {
         count: getActiveUsersCount(roomId),
       });
 
+      socket.emit("permission-update", { permission });
       console.log(
         `${socket.user.email} joined room: ${roomId} with permission ${permission}`
       );
-      socket.emit("permission-update", { permission });
     });
 
-    socket.on("leave-room", ({ roomId }) => {
-      socket.leave(roomId);
-      removeUserFromRoom(roomId, socket.id);
-
-      const count = getActiveUsersCount(roomId);
-      if (count === 0 && ROOM_STATE[roomId]?.isSaved) {
-        delete ROOM_STATE[roomId];
-      }
-
-      io.to(roomId).emit("active-users", {
-        count,
-      });
-    });
-
-    socket.on("code-change", ({ roomId, code }) => {
-      if (socket.permission !== "write") {
-        return socket.emit("error", "Permission denied");
-      }
-
-      if (code === "" && ROOM_STATE[roomId]?.code !== "") {
+    socket.on("yjs-update", ({ roomId, update }) => {
+      const room = ROOM_STATE[roomId];
+      if (!room) {
         return;
       }
 
-      ROOM_STATE[roomId].code = code;
-      ROOM_STATE[roomId].isSaved = false;
+      Y.applyUpdate(room.ydoc, update);
+      room.isSaved = false;
 
-      socket.to(roomId).emit("code-update", code);
+      socket.to(roomId).emit("yjs-update", { roomId, update });
     });
+
+    // socket.on("code-change", ({ roomId, code }) => {
+    //   if (socket.permission !== "write") {
+    //     return socket.emit("error", "Permission denied");
+    //   }
+
+    //   if (code === "" && ROOM_STATE[roomId]?.code !== "") {
+    //     return;
+    //   }
+
+    //   ROOM_STATE[roomId].code = code;
+    //   ROOM_STATE[roomId].isSaved = false;
+
+    //   socket.to(roomId).emit("code-update", code);
+    // });
 
     socket.on("save-code", async ({ roomId }) => {
       const roomData = ROOM_STATE[roomId];
@@ -98,10 +119,12 @@ const setupSocket = (io) => {
         return socket.emit("code-saved");
       }
 
+      const code = roomData.ydoc.getText("codetext").toString();
+
       try {
         await axios.put(
           `${BACKEND_URL}/api/code/${roomId}/save`,
-          { code_input: roomData.code },
+          { code_input: code },
           { headers: { Authorization: `Bearer ${socket.user.token}` } }
         );
 
@@ -113,6 +136,20 @@ const setupSocket = (io) => {
         console.log("Error saving code", error);
         socket.emit("error", "Failed to save code");
       }
+    });
+
+    socket.on("leave-room", ({ roomId }) => {
+      socket.leave(roomId);
+      removeUserFromRoom(roomId, socket.id);
+
+      const count = getActiveUsersCount(roomId);
+      if (count === 0 && ROOM_STATE[roomId]?.isSaved) {
+        delete ROOM_STATE[roomId];
+      }
+
+      io.to(roomId).emit("active-users", {
+        count,
+      });
     });
 
     // CHAT FUNCTION
