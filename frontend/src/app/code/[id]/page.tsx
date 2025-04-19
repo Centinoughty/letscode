@@ -1,8 +1,10 @@
 "use client";
 
 import io from "socket.io-client";
+import * as Y from "yjs";
+
 import { useParams, usePathname } from "next/navigation";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState, useRef } from "react";
 import { getAuthToken } from "@/util/security";
 import axios from "axios";
 import { runCode } from "@/lib/code";
@@ -16,6 +18,9 @@ const socket = io(SOCKET_SERVER, {
 export default function Editor() {
   const pathname = usePathname();
   const { id } = useParams<{ id: string }>();
+
+  const ydocRef = useRef<Y.Doc | null>(null);
+  const ytextRef = useRef<Y.Text | null>(null);
 
   const [code, setCode] = useState<string>("");
   const [permission, setPermission] = useState<"read" | "write" | null>(null);
@@ -37,9 +42,43 @@ export default function Editor() {
   // );
 
   useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    const ydoc = new Y.Doc();
+    const ytext = ydoc.getText("codetext");
+
+    ydocRef.current = ydoc;
+    ytextRef.current = ytext;
+
+    const handleLocalChanges = (event: Y.YTextEvent) => {
+      console.log(permission);
+
+      if (permission === "write") {
+        const update = Y.encodeStateAsUpdate(ydoc);
+        socket.emit("yjs-update", { roomId: id, update });
+      }
+    };
+
+    ytext.observe(handleLocalChanges);
+
     socket.emit("join-room", { roomId: id });
 
+    socket.on("yjs-init", (update: Uint8Array) => {
+      Y.applyUpdate(ydoc, new Uint8Array(update));
+      setCode(ytext.toString());
+    });
+
+    socket.on("yjs-update", ({ update }) => {
+      Y.applyUpdate(ydoc, new Uint8Array(update));
+      const newCode = ytext.toString();
+
+      setCode(newCode);
+    });
+
     socket.on("permission-update", ({ permission }) => {
+      console.log("dfkhg", permission);
       setPermission(permission);
     });
 
@@ -61,12 +100,18 @@ export default function Editor() {
 
     return () => {
       socket.emit("leave-room", { roomId: id });
+      ytext.unobserve(handleLocalChanges);
+      ydoc.destroy();
+
+      socket.off("yjs-init");
+      socket.off("yjs-update");
+
       socket.off("code-update");
       socket.off("permission-update");
       socket.off("send-message");
       socket.off("error");
     };
-  }, [id]);
+  }, [id, permission]);
 
   useEffect(() => {
     return () => {
@@ -80,8 +125,16 @@ export default function Editor() {
     }
 
     const newCode = event.target.value;
+    // setCode(newCode);
+    // socket.emit("code-change", { roomId: id, code: newCode });
+
+    if (ytextRef.current) {
+      const oldLength = ytextRef.current.length;
+      ytextRef.current.delete(0, oldLength);
+      ytextRef.current.insert(0, newCode);
+    }
+
     setCode(newCode);
-    socket.emit("code-change", { roomId: id, code: newCode });
   };
 
   // -- effect change when data updates --
