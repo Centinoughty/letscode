@@ -21,9 +21,14 @@ export default function Editor() {
   const [permission, setPermission] = useState<"read" | "write" | null>(null);
   const [output, setOutput] = useState<string | null>(null);
 
+  const [activeUsers, setActiveUsers] = useState<number>(0);
+
   // temporary
   const [email, setEmail] = useState<string>("");
   const [perms, setPerms] = useState<"read" | "write" | null>(null);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState<string>("");
 
   // -- -- FUNCTION CALL TO FETCH CODE FROM BACKEND -- --
   // const { data, loading, error } = useFetch<CodeResponse>(
@@ -42,6 +47,14 @@ export default function Editor() {
       setCode(newCode);
     });
 
+    socket.on("active-users", ({ count }) => {
+      setActiveUsers(count);
+    });
+
+    socket.on("send-message", (data) => {
+      setMessages((prev) => [...prev, data]);
+    });
+
     socket.on("error", (message) => {
       console.log(message);
     });
@@ -50,6 +63,7 @@ export default function Editor() {
       socket.emit("leave-room", { roomId: id });
       socket.off("code-update");
       socket.off("permission-update");
+      socket.off("send-message");
       socket.off("error");
     };
   }, [id]);
@@ -102,6 +116,13 @@ export default function Editor() {
     socket.emit("save-code", { roomId: id });
   };
 
+  const sendMessage = () => {
+    if (newMessage.trim()) {
+      socket.emit("send-message", { roomId: id, message: newMessage });
+      setNewMessage("");
+    }
+  };
+
   return (
     <>
       <main>
@@ -123,6 +144,10 @@ export default function Editor() {
           <button type="submit">Add</button>
         </form>
 
+        <div>
+          <p>{activeUsers}</p>
+        </div>
+
         <textarea
           name="code"
           value={code}
@@ -134,6 +159,22 @@ export default function Editor() {
         <button onClick={handleRun}>Run</button>
         <button onClick={saveCode}>Save</button>
         <p>{output}</p>
+
+        <div>
+          <ul>
+            {messages.map((message, idx) => (
+              <li key={idx}>
+                {message.username} - {message.message}
+              </li>
+            ))}
+          </ul>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(event) => setNewMessage(event.target.value)}
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
       </main>
     </>
   );

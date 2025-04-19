@@ -115,6 +115,16 @@ const setupSocket = (io) => {
       }
     });
 
+    // CHAT FUNCTION
+    socket.on("send-message", ({ roomId, message }) => {
+      const username = socket.user.email.split("@")[0];
+      io.to(roomId).emit("send-message", {
+        username,
+        message,
+        time: new Date().toISOString(),
+      });
+    });
+
     socket.on("disconnect", () => {
       removeUserFromAllRooms(socket.id);
       console.log(`User disconnected: ${socket.id}`);
