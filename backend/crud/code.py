@@ -319,6 +319,9 @@ def update_access_level(db: Session, code_id: uuid.UUID, collaborator: Collabora
   if not collab_user:
     raise HTTPException(status_code=400, detail="User not found")
   
+  if collab_user.id == code.owner_id:
+    raise HTTPException(status_code=400, detail="Owner cannot be updated as collaborator")
+  
   user_id = collab_user.id
   existing_collaborator = get_collaborator_for_code(db, code_id, user_id)
   if not existing_collaborator:

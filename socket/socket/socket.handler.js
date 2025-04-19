@@ -73,7 +73,7 @@ const setupSocket = (io) => {
         return socket.emit("error", "Permission denied");
       }
 
-      if (code === "" && ROOM_STATE[roomId] !== "") {
+      if (code === "" && ROOM_STATE[roomId]?.code !== "") {
         return;
       }
 
@@ -95,7 +95,7 @@ const setupSocket = (io) => {
       }
 
       if (roomData.isSaved) {
-        return socket.emit("code saved");
+        return socket.emit("code-saved");
       }
 
       try {
