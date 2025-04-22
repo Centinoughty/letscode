@@ -5,9 +5,9 @@ const { checkPermission } = require("../middlewares/permission.middleware");
 const {
   addUserToRoom,
   getActiveUsersCount,
-  removeUserFromRoom,
   removeUserFromAllRooms,
-} = require("./users.handler");
+  removeUserFromRoom,
+} = require("../socket/users.handler");
 const { BACKEND_URL } = require("../config/env");
 
 const ROOM_STATE = {};
@@ -19,7 +19,7 @@ const setupSocket = (io) => {
     socket.on("join-room", async ({ roomId }) => {
       const permission = await checkPermission(socket.user.token, roomId);
       if (!permission) {
-        return socket.emit("error", "Permission denied");
+        return socket.emit("error", "Permission Denied");
       }
 
       socket.join(roomId);
@@ -41,6 +41,7 @@ const setupSocket = (io) => {
         }
       }
 
+      socket.emit("permission-update", { permission: socket.permission });
       socket.emit("code-update", ROOM_STATE[roomId].code);
 
       addUserToRoom(roomId, socket.id);
@@ -51,31 +52,15 @@ const setupSocket = (io) => {
       console.log(
         `${socket.user.email} joined room: ${roomId} with permission ${permission}`
       );
-      socket.emit("permission-update", { permission });
     });
 
-    socket.on("leave-room", ({ roomId }) => {
-      socket.leave(roomId);
-      removeUserFromRoom(roomId, socket.id);
-
-      const count = getActiveUsersCount(roomId);
-      if (count === 0 && ROOM_STATE[roomId]?.isSaved) {
-        delete ROOM_STATE[roomId];
-      }
-
-      io.to(roomId).emit("active-users", {
-        count,
-      });
-    });
-
+    // -- -- FUNCTION TO HANDLE CODE CHANGE -- --
     socket.on("code-change", ({ roomId, code }) => {
       if (socket.permission !== "write") {
-        return socket.emit("error", "Permission denied");
+        return socket.emit("error", "Permission Denied");
       }
 
-      if (code === "" && ROOM_STATE[roomId]?.code !== "") {
-        return;
-      }
+      if (code === "" && ROOM_STATE[roomId]?.code !== "") return;
 
       ROOM_STATE[roomId].code = code;
       ROOM_STATE[roomId].isSaved = false;
@@ -83,15 +68,15 @@ const setupSocket = (io) => {
       socket.to(roomId).emit("code-update", code);
     });
 
+    // -- -- FUNCTION TO SAVE CODE -- --
     socket.on("save-code", async ({ roomId }) => {
       const roomData = ROOM_STATE[roomId];
       if (!roomData) {
-        return socket.emit("save-error", "Room not found");
+        return socket.emit("save-error", "Room Not Found");
       }
 
-      // check if user has permission to run code
       if (socket.permission !== "write") {
-        return socket.emit("error", "Permission denied");
+        return socket.emit("error", "Permission Denied");
       }
 
       if (roomData.isSaved) {
@@ -108,14 +93,27 @@ const setupSocket = (io) => {
         roomData.isSaved = true;
         io.to(roomId).emit("code-saved");
 
-        console.log(`DEBUG: code saved for room ${roomId}`);
+        console.log(`DEBUG: Code saved for room ${roomId}`);
       } catch (error) {
-        console.log("Error saving code", error);
+        console.log("error saving code");
         socket.emit("error", "Failed to save code");
       }
     });
 
-    // CHAT FUNCTION
+    // -- FUNCTION TO HANDLE LEAVE -- --
+    socket.on("leave-room", ({ roomId }) => {
+      socket.leave(roomId);
+      removeUserFromRoom(roomId, socket.id);
+
+      const count = getActiveUsersCount(roomId);
+      if (count == 0 && ROOM_STATE[roomId]?.isSaved) {
+        delete ROOM_STATE[roomId];
+      }
+
+      io.to(roomId).emit("active-users", { count });
+    });
+
+    // -- -- FUNCTION TO SEND CHAT MESSAGES -- --
     socket.on("send-message", ({ roomId, message }) => {
       const username = socket.user.email.split("@")[0];
       io.to(roomId).emit("send-message", {
