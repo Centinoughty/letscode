@@ -17,6 +17,12 @@ const socket = io(SOCKET_SERVER, {
   transports: ["websocket"],
 });
 
+const LANGUAGE_MAP: Record<string, string> = {
+  py: "python",
+  cpp: "cpp",
+  c: "c",
+};
+
 export default function Editor() {
   const pathname = usePathname();
   const { id } = useParams<{ id: string }>();
@@ -24,6 +30,7 @@ export default function Editor() {
 
   // -- -- Socket State
   const [code, setCode] = useState<string>("");
+  const [language, setLanguage] = useState<Language>("");
   const [activeUsers, setActiveUsers] = useState<number>(0);
   const [permission, setPermission] = useState<"read" | "write" | null>(null);
   const [output, setOutput] = useState<string>("");
@@ -43,6 +50,10 @@ export default function Editor() {
     socket.on("permission-update", ({ permission }) => {
       // console.log(permission)
       setPermission(permission);
+    });
+
+    socket.on("language-update", ({ language }) => {
+      setLanguage(language);
     });
 
     socket.on("code-update", (newCode) => {
@@ -144,11 +155,13 @@ export default function Editor() {
           <button type="submit">Add</button>
         </form>
 
-        <div>{activeUsers}</div>
+        <div>
+          {activeUsers} - {language}
+        </div>
 
         <MonacoEditor
           height="500px"
-          language="cpp"
+          language={LANGUAGE_MAP[language]}
           value={code}
           onMount={handleEditorMount}
           options={{

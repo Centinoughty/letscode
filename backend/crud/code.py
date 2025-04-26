@@ -163,7 +163,8 @@ def get_code_data(db: Session, code_id: uuid.UUID, token: str):
   return {
     "code_id": str(code_id),
     "owner_id": str(code.owner_id),
-    "code": code_content
+    "code": code_content,
+    "language": code.language
   }
 
 

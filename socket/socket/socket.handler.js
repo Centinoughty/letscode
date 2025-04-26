@@ -34,6 +34,7 @@ const setupSocket = (io) => {
 
           ROOM_STATE[roomId] = {
             code: response.data.code || "",
+            language: response.data.language || "cpp",
             isSaved: true,
           };
         } catch (error) {
@@ -42,6 +43,7 @@ const setupSocket = (io) => {
       }
 
       socket.emit("permission-update", { permission: socket.permission });
+      socket.emit("language-update", { language: ROOM_STATE[roomId].language });
       socket.emit("code-update", ROOM_STATE[roomId].code);
 
       addUserToRoom(roomId, socket.id);
