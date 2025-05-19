@@ -1,9 +1,12 @@
 "use client";
 
+import * as monaco from "monaco-editor";
 import io from "socket.io-client";
-import { useParams, usePathname } from "next/navigation";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
+import { useParams } from "next/navigation";
 import { getAuthToken } from "@/util/security";
+
+const clientId = crypto.randomUUID();
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
 const socket = io(SOCKET_SERVER, {
@@ -11,64 +14,104 @@ const socket = io(SOCKET_SERVER, {
   transports: ["websocket"],
 });
 
-export default function Editor() {
-  const pathname = usePathname();
-  const { id } = useParams<{ id: string }>();
+interface Operation {
+  version: number;
+  clientId: string;
+  change: monaco.editor.IModelContentChange;
+  text: string;
+  offset: number;
+  timestamp: number;
+}
 
-  const [code, setCode] = useState<string>("");
-  const [permission, setPermission] = useState<"read" | "write" | null>(null);
+export default function Editor() {
+  const { id } = useParams();
+
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<typeof monaco | null>(null);
+  const operationQueue = useRef<Operation[]>([]);
+
+  const versionRef = useRef<number>(0);
+  const isApplyingChange = useRef(false);
 
   useEffect(() => {
-    socket.emit("join-room", { roomId: id });
+    if (typeof window === "undefined") return;
 
-    socket.on("permission-update", ({ permission }) => {
-      setPermission(permission);
+    socket.emit("join-room", id);
+
+    socket.on("initial-doc", ({ initialCode, version: serverVersion }) => {
+      if (!editorRef.current) {
+        initializeMonaco(initialCode);
+      }
+
+      versionRef.current = serverVersion;
     });
 
-    socket.on("code-update", (newCode) => {
-      setCode(newCode);
-    });
-
-    socket.on("error", (message) => {
-      console.log(message);
+    socket.on("remote-change", ({ operation }) => {
+      console.log(operation);
+      applyRemoteChange(operation);
+      versionRef.current = operation.version;
     });
 
     return () => {
-      socket.emit("leave-room", { roomId: id });
-      socket.off("permission-update");
-      socket.off("code-update");
-      socket.off("error");
+      editorRef.current?.dispose();
+      socket.disconnect();
     };
   }, [id]);
 
-  useEffect(() => {
-    return () => {
-      socket.emit("leave-room", { roomId: id });
-    };
-  }, [pathname]);
+  const initializeMonaco = async (content: string) => {
+    const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
 
-  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    if (permission !== "write") {
-      return;
-    }
+    monacoRef.current = monaco;
 
-    const newCode = event.target.value;
-    setCode(newCode);
-    socket.emit("code-change", { roomId: id, code: newCode });
+    const editor = monaco.editor.create(document.getElementById("editor")!, {
+      value: content,
+    });
+
+    editorRef.current = editor;
+
+    editor.onDidChangeModelContent((event) => {
+      if (isApplyingChange.current) return;
+
+      console.log(event);
+
+      event.changes.forEach((change) => {
+        const operation: Operation = {
+          version: versionRef.current + 1,
+          clientId,
+          change,
+          text: change.text,
+          offset: change.rangeOffset,
+          timestamp: Date.now(),
+        };
+
+        versionRef.current += 1;
+        operationQueue.current.push(operation);
+        socket.emit("code-change", { id, operation });
+      });
+    });
+  };
+
+  const applyRemoteChange = (operation: Operation) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    if (clientId === operation.clientId) return;
+
+    isApplyingChange.current = true;
+    editor.executeEdits("remote", [
+      {
+        range: operation.change.range,
+        text: operation.text,
+        forceMoveMarkers: true,
+      },
+    ]);
+
+    isApplyingChange.current = false;
   };
 
   return (
     <>
-      <main>
-        <textarea
-          name="code"
-          value={code}
-          onChange={handleChange}
-          id="code"
-          disabled={permission !== "write"}
-          className="h-96"
-        ></textarea>
-      </main>
+      <div id="editor" className="h-[90vh]"></div>
     </>
   );
 }
