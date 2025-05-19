@@ -83,48 +83,6 @@ const setupSocket = (io) => {
       socket.to(roomId).emit("code-update", code);
     });
 
-    socket.on("save-code", async ({ roomId }) => {
-      const roomData = ROOM_STATE[roomId];
-      if (!roomData) {
-        return socket.emit("save-error", "Room not found");
-      }
-
-      // check if user has permission to run code
-      if (socket.permission !== "write") {
-        return socket.emit("error", "Permission denied");
-      }
-
-      if (roomData.isSaved) {
-        return socket.emit("code-saved");
-      }
-
-      try {
-        await axios.put(
-          `${BACKEND_URL}/api/code/${roomId}/save`,
-          { code_input: roomData.code },
-          { headers: { Authorization: `Bearer ${socket.user.token}` } }
-        );
-
-        roomData.isSaved = true;
-        io.to(roomId).emit("code-saved");
-
-        console.log(`DEBUG: code saved for room ${roomId}`);
-      } catch (error) {
-        console.log("Error saving code", error);
-        socket.emit("error", "Failed to save code");
-      }
-    });
-
-    // CHAT FUNCTION
-    socket.on("send-message", ({ roomId, message }) => {
-      const username = socket.user.email.split("@")[0];
-      io.to(roomId).emit("send-message", {
-        username,
-        message,
-        time: new Date().toISOString(),
-      });
-    });
-
     socket.on("disconnect", () => {
       removeUserFromAllRooms(socket.id);
       console.log(`User disconnected: ${socket.id}`);
