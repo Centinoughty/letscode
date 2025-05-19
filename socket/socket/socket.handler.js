@@ -1,91 +1,51 @@
-const axios = require("axios");
-
-const { authenticateUser } = require("../middlewares/auth.middleware");
-const { checkPermission } = require("../middlewares/permission.middleware");
-const {
-  addUserToRoom,
-  getActiveUsersCount,
-  removeUserFromRoom,
-  removeUserFromAllRooms,
-} = require("./users.handler");
-const { BACKEND_URL } = require("../config/env");
-
 const ROOM_STATE = {};
 
 const setupSocket = (io) => {
-  io.use(authenticateUser);
-
   io.on("connection", (socket) => {
-    socket.on("join-room", async ({ roomId }) => {
-      const permission = await checkPermission(socket.user.token, roomId);
-      if (!permission) {
-        return socket.emit("error", "Permission denied");
-      }
-
+    socket.on("join-room", (roomId) => {
       socket.join(roomId);
-      socket.permission = permission;
 
       if (ROOM_STATE[roomId] === undefined) {
-        try {
-          const response = await axios.get(
-            `${BACKEND_URL}/api/code/${roomId}`,
-            { headers: { Authorization: `Bearer ${socket.user.token}` } }
-          );
-
-          ROOM_STATE[roomId] = {
-            code: response.data.code || "",
-            isSaved: true,
-          };
-        } catch (error) {
-          ROOM_STATE[roomId] = { code: null, isSaved: false };
-        }
+        ROOM_STATE[roomId] = {
+          code: "",
+          version: 0,
+          history: [],
+          clients: new Set(),
+        };
       }
 
-      socket.emit("code-update", ROOM_STATE[roomId].code);
+      ROOM_STATE[roomId].clients.add(socket.id);
 
-      addUserToRoom(roomId, socket.id);
-      io.to(roomId).emit("active-users", {
-        count: getActiveUsersCount(roomId),
+      socket.emit("initial-doc", {
+        initialCode: "khfgb",
+        version: ROOM_STATE[roomId].version,
       });
 
-      console.log(
-        `${socket.user.email} joined room: ${roomId} with permission ${permission}`
-      );
-      socket.emit("permission-update", { permission });
+      console.log(`${socket.id} joined room: ${roomId} with permission`);
     });
 
-    socket.on("leave-room", ({ roomId }) => {
-      socket.leave(roomId);
-      removeUserFromRoom(roomId, socket.id);
+    socket.on("code-change", ({ id: roomId, operation }) => {
+      const room = ROOM_STATE[roomId];
+      if (!room) return;
 
-      const count = getActiveUsersCount(roomId);
-      if (count === 0 && ROOM_STATE[roomId]?.isSaved) {
-        delete ROOM_STATE[roomId];
-      }
+      const incomingVersion = operation.version;
+      const serverVersion = room.version;
 
-      io.to(roomId).emit("active-users", {
-        count,
-      });
-    });
-
-    socket.on("code-change", ({ roomId, code }) => {
-      if (socket.permission !== "write") {
-        return socket.emit("error", "Permission denied");
-      }
-
-      if (code === "" && ROOM_STATE[roomId]?.code !== "") {
+      if (incomingVersion <= serverVersion) {
         return;
       }
 
-      ROOM_STATE[roomId].code = code;
-      ROOM_STATE[roomId].isSaved = false;
+      const { rangeOffset, rangeLength = 0, text } = operation.change;
 
-      socket.to(roomId).emit("code-update", code);
-    });
+      const before = room.code.slice(0, rangeOffset);
+      const after = room.code.slice(rangeOffset + rangeLength);
+      room.code = before + text + after;
 
-    socket.on("disconnect", () => {
-      removeUserFromAllRooms(socket.id);
-      console.log(`User disconnected: ${socket.id}`);
+      room.version++;
+      operation.version = room.version;
+
+      room.history.push(operation);
+      io.to(roomId).emit("remote-change", { operation });
     });
   });
 };
