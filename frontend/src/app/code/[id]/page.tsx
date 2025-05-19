@@ -2,7 +2,7 @@
 
 import io from "socket.io-client";
 import { useParams, usePathname } from "next/navigation";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { getAuthToken } from "@/util/security";
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
