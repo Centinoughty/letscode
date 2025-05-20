@@ -2,11 +2,12 @@
 
 import * as monaco from "monaco-editor";
 import io from "socket.io-client";
+import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getAuthToken } from "@/util/security";
 
-const clientId = crypto.randomUUID();
+const clientId = uuidv4();
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
 const socket = io(SOCKET_SERVER, {
@@ -35,6 +36,9 @@ export default function Editor() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    const container = document.getElementById("editor");
+    if (!container) return;
 
     socket.emit("join-room", id);
 
@@ -71,8 +75,6 @@ export default function Editor() {
 
     editor.onDidChangeModelContent((event) => {
       if (isApplyingChange.current) return;
-
-      console.log(event);
 
       event.changes.forEach((change) => {
         const operation: Operation = {
