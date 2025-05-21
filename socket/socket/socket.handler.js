@@ -33,7 +33,7 @@ const setupSocket = (io) => {
       if (!room) return;
 
       const incomingVersion = operation.version;
-      const serverVersion = room.version;
+      // const serverVersion = room.version;
 
       const relevantOps = room.history.filter(
         (op) => op.version > incomingVersion
@@ -41,9 +41,9 @@ const setupSocket = (io) => {
 
       const transformedOp = transformOp(operation.change, relevantOps);
 
-      if (incomingVersion <= serverVersion) {
-        return;
-      }
+      // if (incomingVersion <= serverVersion) {
+      //   return;
+      // }
 
       const { rangeOffset, rangeLength = 0, text } = transformedOp;
 
