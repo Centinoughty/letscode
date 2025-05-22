@@ -1,7 +1,7 @@
 "use client";
 
 import * as monaco from "monaco-editor";
-import io from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -10,10 +10,6 @@ import { getAuthToken } from "@/util/security";
 const clientId = uuidv4();
 
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
-const socket = io(SOCKET_SERVER, {
-  auth: { token: getAuthToken() },
-  transports: ["websocket"],
-});
 
 interface Operation {
   version: number;
@@ -29,52 +25,28 @@ export default function Editor() {
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof monaco | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const operationQueue = useRef<Operation[]>([]);
 
   const versionRef = useRef<number>(0);
-  const isApplyingChange = useRef(false);
+  const isEditorInit = useRef<boolean>(false);
+  const isApplyingChange = useRef<boolean>(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const container = document.getElementById("editor");
-    if (!container) return;
-
-    socket.emit("join-room", id);
-
-    socket.on("initial-doc", ({ initialCode, version: serverVersion }) => {
-      if (!editorRef.current) {
-        initializeMonaco(initialCode);
-      }
-
-      versionRef.current = serverVersion;
-    });
-
-    socket.on("remote-change", ({ operation }) => {
-      console.log(operation);
-      applyRemoteChange(operation);
-      versionRef.current = operation.version;
-    });
-
-    return () => {
-      editorRef.current?.dispose();
-      socket.disconnect();
-    };
-  }, [id]);
-
-  const initializeMonaco = async (content: string) => {
+  const initializeMonaco = async () => {
     const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
 
     monacoRef.current = monaco;
 
     const editor = monaco.editor.create(document.getElementById("editor")!, {
-      value: content,
+      value: "",
+      fontSize: 14,
+      minimap: { enabled: false },
     });
 
     editorRef.current = editor;
 
     editor.onDidChangeModelContent((event) => {
-      if (isApplyingChange.current) return;
+      if (!isEditorInit.current || isApplyingChange.current) return;
 
       event.changes.forEach((change) => {
         const operation: Operation = {
@@ -87,8 +59,13 @@ export default function Editor() {
         };
 
         versionRef.current += 1;
-        operationQueue.current.push(operation);
-        socket.emit("code-change", { id, operation });
+
+        if (socketRef.current?.connected) {
+          console.log(socketRef.current?.connected);
+          socketRef.current.emit("code-change", { id, operation });
+        } else {
+          operationQueue.current.push(operation);
+        }
       });
     });
   };
@@ -111,9 +88,79 @@ export default function Editor() {
     isApplyingChange.current = false;
   };
 
+  const flushQueuedChanges = () => {
+    const socket = socketRef.current;
+    while (operationQueue.current.length && socket?.connected) {
+      const operation = operationQueue.current.shift();
+      if (operation) {
+        socket.emit("code-change", { id, operation });
+      }
+    }
+  };
+
+  const connectSocket = () => {
+    if (typeof window === "undefined") return;
+
+    const container = document.getElementById("editor");
+    if (!container) return;
+
+    const socket = io(SOCKET_SERVER, {
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      auth: { token: getAuthToken() },
+      transports: ["websocket"],
+    });
+
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      console.log("Connected to the socket server");
+      socket.emit("join-room", id);
+      flushQueuedChanges();
+    });
+
+    socket.on("init", ({ initialCode, version: serverVersion }) => {
+      const model = editorRef.current?.getModel();
+      if (!model) return;
+      isApplyingChange.current = true;
+      model.setValue(initialCode);
+      isApplyingChange.current = false;
+      versionRef.current = serverVersion;
+      isEditorInit.current = true;
+    });
+
+    socket.on("remote-change", ({ operation }) => {
+      console.log(operation);
+      applyRemoteChange(operation);
+      versionRef.current = operation.version;
+    });
+
+    socket.on("disconnect", () => {
+      console.log("disconnected");
+    });
+  };
+
+  useEffect(() => {
+    const setup = async () => {
+      await initializeMonaco();
+      connectSocket();
+    };
+
+    setup();
+
+    return () => {
+      if (socketRef.current?.connected) {
+        socketRef.current.emit("leave-room", id);
+      }
+
+      editorRef.current?.dispose();
+      socketRef.current?.disconnect();
+    };
+  }, []);
+
   return (
     <>
-      <div id="editor" className="h-[90vh]"></div>
+      <div id="editor" className="h-screen"></div>
     </>
   );
 }
