@@ -74,49 +74,4 @@ const transform = (op1, op2) => {
   return op1;
 };
 
-const transformOp = (incoming, history) => {
-  let offset = incoming.rangeOffset;
-  let length = incoming.rangeLength || 0;
-
-  for (const op of history) {
-    const opOffset = op.change.rangeOffset;
-    const opTextLength = op.change.text.length;
-    const opDelLength = op.change.rangeLength || 0;
-
-    if (opOffset < offset) {
-      if (opDelLength === 0 && opTextLength > 0) {
-        offset += opTextLength;
-      }
-    }
-
-    if (opOffset < offset && opDelLength > 0 && opTextLength === 0) {
-      offset -= Math.min(opDelLength, offset - opOffset);
-    }
-
-    if (
-      opOffset >= offset &&
-      opOffset < offset + length &&
-      opDelLength > 0 &&
-      opTextLength === 0
-    ) {
-      length -= Math.min(length, opDelLength);
-    }
-
-    if (
-      opOffset >= offset &&
-      opOffset <= offset + length &&
-      opTextLength > 0 &&
-      opDelLength === 0
-    ) {
-      length += opTextLength;
-    }
-  }
-
-  return {
-    ...incoming,
-    rangeOffset: offset,
-    rangeLength: length,
-  };
-};
-
 module.exports = { transform };

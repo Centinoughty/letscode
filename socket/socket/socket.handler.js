@@ -25,7 +25,7 @@ const setupSocket = (io) => {
         version: ROOM_STATE[roomId].version,
       });
 
-      console.log(`${socket.id} joined room: ${roomId} with permission`);
+      console.log(`${socket.user.email} joined the room ${roomId}`);
     });
 
     socket.on("code-change", ({ id: roomId, operation }) => {
@@ -59,11 +59,11 @@ const setupSocket = (io) => {
 
     socket.on("leave-room", (roomId) => {
       socket.leave(roomId);
-      console.log(`User left from room ${socket.id}`);
+      console.log(`${socket.user.email} left room ${roomId}`);
     });
 
     socket.on("disconnect", () => {
-      console.log(`User disconnected ${socket.id}`);
+      console.log(`${socket.user.email} disconnected from room`);
     });
   });
 };
