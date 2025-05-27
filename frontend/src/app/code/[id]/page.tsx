@@ -4,7 +4,7 @@ import * as monaco from "monaco-editor";
 import { io, Socket } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { getAuthToken } from "@/util/security";
 
 const clientId = uuidv4();
@@ -22,6 +22,7 @@ interface Operation {
 
 export default function Editor() {
   const { id } = useParams();
+  const pathname = usePathname();
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof monaco | null>(null);
@@ -149,14 +150,27 @@ export default function Editor() {
     setup();
 
     return () => {
-      if (socketRef.current?.connected) {
-        socketRef.current.emit("leave-room", id);
+      if (socketRef.current) {
+        socketRef.current.off("connect");
+        socketRef.current.off("init");
+        socketRef.current.off("remote-change");
+        socketRef.current.off("disconnect");
+        if (socketRef.current.connected) {
+          socketRef.current.emit("leave-room", id);
+        }
+
+        socketRef.current.disconnect();
       }
 
       editorRef.current?.dispose();
-      socketRef.current?.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      socketRef.current?.emit("leave-room", id);
+    };
+  }, [pathname]);
 
   return (
     <>
