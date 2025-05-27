@@ -1,5 +1,4 @@
 interface Message {
-  username: string;
+  sender: string;
   message: string;
-  time: string;
 }

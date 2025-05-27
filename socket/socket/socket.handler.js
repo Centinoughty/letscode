@@ -57,6 +57,15 @@ const setupSocket = (io) => {
       io.to(roomId).emit("remote-change", { operation, transformedOp });
     });
 
+    socket.on("send-message", ({ roomId, message }) => {
+      const username = socket.user.email.split("@")[0];
+      io.to(roomId).emit("message", {
+        sender: username,
+        message,
+        time: new Date().toISOString(),
+      });
+    });
+
     socket.on("leave-room", (roomId) => {
       socket.leave(roomId);
       console.log(`${socket.user.email} left room ${roomId}`);

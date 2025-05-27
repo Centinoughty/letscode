@@ -3,12 +3,13 @@
 import * as monaco from "monaco-editor";
 import { io, Socket } from "socket.io-client";
 import { v4 as uuidv4 } from "uuid";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, ChangeEvent } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { getAuthToken } from "@/util/security";
+import "monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution";
+import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 
 const clientId = uuidv4();
-
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
 
 interface Operation {
@@ -33,6 +34,27 @@ export default function Editor() {
   const isEditorInit = useRef<boolean>(false);
   const isApplyingChange = useRef<boolean>(false);
 
+  // Chat
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [message, setMessage] = useState<string>("");
+
+  // -- -- -- Function to Handle a Message Change -- -- --
+  const handleMessageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setMessage(event.target.value);
+  };
+
+  // -- -- -- Function to Send a Message -- -- --
+  const sendMessage = () => {
+    const socket = socketRef.current;
+    if (socket?.connected) {
+      if (message.trim()) {
+        socket.emit("send-message", { roomId: id, message });
+      }
+    }
+
+    setMessage("");
+  };
+
   const initializeMonaco = async () => {
     const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
 
@@ -41,7 +63,16 @@ export default function Editor() {
     const editor = monaco.editor.create(document.getElementById("editor")!, {
       value: "",
       fontSize: 14,
+      language: "cpp",
+      theme: "vs-dark",
+      cursorBlinking: "smooth",
+      cursorSmoothCaretAnimation: "on",
+      scrollBeyondLastLine: false,
       minimap: { enabled: false },
+      padding: {
+        top: 10,
+        bottom: 10,
+      },
     });
 
     editorRef.current = editor;
@@ -136,6 +167,10 @@ export default function Editor() {
       versionRef.current = operation.version;
     });
 
+    socket.on("message", (data) => {
+      setAllMessages((prev) => [...prev, data]);
+    });
+
     socket.on("disconnect", () => {
       console.log("disconnected");
     });
@@ -154,6 +189,7 @@ export default function Editor() {
         socketRef.current.off("connect");
         socketRef.current.off("init");
         socketRef.current.off("remote-change");
+        socketRef.current.off("message");
         socketRef.current.off("disconnect");
         if (socketRef.current.connected) {
           socketRef.current.emit("leave-room", id);

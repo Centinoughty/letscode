@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+:root {
+  --editor: #1e1e1e;
+}
