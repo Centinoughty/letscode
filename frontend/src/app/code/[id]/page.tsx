@@ -210,7 +210,7 @@ export default function Editor() {
 
   return (
     <>
-      <div id="editor" className="h-screen"></div>
+      <div id="editor" className="h-[90vh]"></div>
     </>
   );
 }

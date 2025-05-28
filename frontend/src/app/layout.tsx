@@ -17,10 +17,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased bg-black text-white">
         <ReduxProvider>
-          <div className="flex flex-col h-screen">
-            <Navbar />
-            <main className="grow flex">{children}</main>
-          </div>
+          <Navbar />
+          {children}
         </ReduxProvider>
       </body>
     </html>
