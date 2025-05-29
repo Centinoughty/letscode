@@ -1,6 +1,7 @@
 "use client";
 
 import { RootState } from "@/store/store";
+import { poppins } from "@/styles/fonts";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 
@@ -9,13 +10,23 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="flex justify-between">
-        {user && <span>Welcome, {user.email}</span>}
-        <div className="flex gap-2">
+      <nav className="px-4 py-2 flex justify-between">
+        <div>
+          <span>letscode</span>
+        </div>
+        <div
+          className={`flex gap-4 ${poppins.className} text-lg text-gray-400 tracking-wide`}
+        >
           <Link href="/">Home</Link>
           <Link href="/dashboard">Dashboard</Link>
-          <Link href="/auth/login">Login</Link>
-          <Link href="/auth/signup">Signup</Link>
+          <Link href="/explore">Explore</Link>
+        </div>
+        <div className="text-gray-400">
+          {user ? (
+            <span>{user.email.toUpperCase().split("")[0]}</span>
+          ) : (
+            <Link href="/auth/login"></Link>
+          )}
         </div>
       </nav>
     </>

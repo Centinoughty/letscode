@@ -1,6 +1,6 @@
 interface Code {
   id: string;
-  fileName: string;
+  file_name: string;
   codePath: string;
   language: string;
   ownerId: number;
