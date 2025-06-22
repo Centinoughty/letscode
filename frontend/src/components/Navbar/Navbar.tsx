@@ -15,7 +15,7 @@ export default function Navbar() {
           <span>letscode</span>
         </div>
         <div
-          className={`flex gap-4 ${poppins.className} text-lg text-gray-400 tracking-wide`}
+          className={`flex gap-4 ${poppins.className} text-gray-400 tracking-wide`}
         >
           <Link href="/">Home</Link>
           <Link href="/dashboard">Dashboard</Link>
