@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-[var(--secondary)] text-white">
+      <body className="antialiased">
         <ReduxProvider>
           <Navbar />
           {children}

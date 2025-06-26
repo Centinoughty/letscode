@@ -1,17 +1,24 @@
+const axios = require("axios");
 const { authenticateUser } = require("../middlewares/auth.middleware");
 const { transform } = require("../util/ot");
 
 const ROOM_STATE = {};
+const BACKEND_URL = process.env.BACKEND_URL;
 
 const setupSocket = (io) => {
   io.use(authenticateUser);
 
   io.on("connection", (socket) => {
-    socket.on("join-room", (roomId) => {
+    socket.on("join-room", async (roomId) => {
       socket.join(roomId);
+
+      const response = await axios.get(`${BACKEND_URL}/api/code/${roomId}`, {
+        headers: { Authorization: `Bearer ${socket.user.token}` },
+      });
+
       if (ROOM_STATE[roomId] === undefined) {
         ROOM_STATE[roomId] = {
-          code: "",
+          code: response.data.code || "",
           version: 0,
           history: [],
           clients: new Set(),
