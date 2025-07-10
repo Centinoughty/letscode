@@ -1,27 +1,12 @@
 "use client";
 
-import { SignupAction } from "@/store/actions/authActions";
-import { AppDispatch, RootState } from "@/store/store";
-import Link from "next/link";
 import { useState, FormEvent, ChangeEvent } from "react";
+import { AppDispatch, RootState } from "@/store/store";
 import { useDispatch, useSelector } from "react-redux";
-
-const CodeCollaboratorIcon = ({ className }: { className: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16 18l6-6-6-6" />
-    <path d="M8 6l-6 6 6 6" />
-    <line x1="14.5" y1="4" x2="9.5" y2="20" />
-  </svg>
-);
+import Input from "@/components/Input/Input";
+import { MdErrorOutline } from "react-icons/md";
+import { SignupAction } from "@/store/actions/authActions";
+import Link from "next/link";
 
 export default function SignupPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -38,113 +23,74 @@ export default function SignupPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (loading) return;
     dispatch(SignupAction(formData));
 
     setFormData({ username: "", email: "", password: "" });
   }
 
   return (
-    <>
-      <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl animate-blob"></div>
-          <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-500 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-4000"></div>
+    <main className="flex min-h-[100dvh] w-full items-center justify-center bg-[#FFFFFF] p-4">
+      <div className="w-full max-w-md rounded-lg border border-[#dadce0] px-8 py-10">
+        <div className="text-center">
+          <h1 className="text-2xl text-[#1F1F1F]">Sign up</h1>
+          <p className="mt-2 text-base text-black">to continue to letscode</p>
         </div>
 
-        <div className="relative z-10 w-full max-w-md p-8 space-y-8 bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700">
-          <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <CodeCollaboratorIcon className="w-16 h-16 text-blue-400" />
-            </div>
-            <h1 className="text-4xl font-bold text-white">Create Account</h1>
-            <p className="mt-2 text-lg text-gray-400">Join the collaboration</p>
-          </div>
+        {error && (
+          <p className="mt-4 flex items-center justify-center gap-2 text-center text-sm text-[#DB4437]">
+            <MdErrorOutline className="text-base" />
+            <span className="font-medium">Error:</span> {error}
+          </p>
+        )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="username"
-                className="block mb-2 text-sm font-medium text-gray-300"
-              >
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                placeholder="your_username"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+          <Input
+            id="username"
+            name="username"
+            type="text"
+            value={formData.email}
+            onChange={handleChange}
+            label="Username"
+          />
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-gray-300"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                placeholder="you@example.com"
-              />
-            </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            label="Email Address"
+          />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 mt-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                placeholder="••••••••"
-              />
-            </div>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            label="Password"
+          />
 
-            <div>
-              <button
-                type="submit"
-                className="w-full px-4 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
-              >
-                Sign Up
-              </button>
-            </div>
-          </form>
-
-          <p className="text-sm text-center text-gray-400">
-            Already have an account?{" "}
+          <div className="mt-8 flex items-center justify-between">
             <Link
               href="/auth/login"
-              className="font-medium text-blue-400 hover:underline"
+              className="rounded-md px-3 py-2 text-sm font-medium text-[#1A73E8] transition-colors hover:bg-blue-50"
             >
-              Sign in
+              Have an account?
             </Link>
-          </p>
-        </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex h-10 min-w-[90px] items-center justify-center rounded-md bg-[#1A73E8] px-6 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#1B66C9] hover:shadow-md disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
+            >
+              {loading ? "..." : "Create"}
+            </button>
+          </div>
+        </form>
       </div>
-    </>
+    </main>
   );
 }
