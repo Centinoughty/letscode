@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect, useState, ChangeEvent } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { getAuthToken } from "@/util/security";
-import { poppins, roboto } from "@/styles/fonts";
 import Chat from "@/components/Chat/Chat";
 
 const clientId = uuidv4();

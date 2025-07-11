@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <>
-      <main className={`w-full bg-white ${roboto.className}`}>
+      <main className={`pt-9 w-full bg-white ${roboto.className}`}>
         <section className="flex flex-col items-center justify-center text-center px-4 pt-20 pb-16">
           <h1 className="text-5xl md:text-6xl font-normal text-[#1F1F1F] tracking-tight">
             Code Together, Instantly
