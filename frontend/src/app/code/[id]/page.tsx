@@ -27,6 +27,7 @@ export default function Editor() {
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof monaco | null>(null);
+  const isMonacoInitialized = useRef<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
   const operationQueue = useRef<Operation[]>([]);
 
@@ -56,6 +57,9 @@ export default function Editor() {
   };
 
   const initializeMonaco = async () => {
+    if (isMonacoInitialized.current || !document.getElementById("editor"))
+      return;
+
     const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
 
     monacoRef.current = monaco;
@@ -76,6 +80,7 @@ export default function Editor() {
     });
 
     editorRef.current = editor;
+    isMonacoInitialized.current = true;
 
     editor.onDidChangeModelContent((event) => {
       if (!isEditorInit.current || isApplyingChange.current) return;

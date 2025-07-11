@@ -40,61 +40,22 @@ export default function Home() {
 
   return (
     <>
-      <main className="mx-4 sm:mx-6 px-4 sm:px-6 lg:px-8">
-        <h2
-          className={`${poppins.className} text-center font-medium tracking-wide text-xl sm:text-2xl md:text-3xl lg:text-4xl my-6`}
-        >
-          Start Coding Right Now!!
-        </h2>
-
+      <main>
         <CreateCode onCodeCreate={handleCodeCreated} />
-
-        <h3
-          className={`${poppins.className} font-medium tracking-wide text-lg sm:text-xl md:text-2xl mt-8 mb-4`}
-        >
-          Recent Codes
-        </h3>
-
         {data && (
-          <div className="space-y-4">
+          <div>
             {ownedCodes.map((code: Code, idx: number) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center bg-gray-800 p-4 rounded-md"
-              >
-                <Link
-                  href={`/code/${code.id}`}
-                  className="text-blue-400 hover:underline"
-                >
-                  {code.id}
-                </Link>
+              <div key={idx}>
+                <Link href={`/code/${code.id}`}>{code.id}</Link>
                 <span>{code.file_name}</span>
-                <button
-                  onClick={() => handleDelete(code.id)}
-                  className="text-red-400 hover:text-red-600 transition"
-                >
-                  Delete
-                </button>
+                <button onClick={() => handleDelete(code.id)}>Delete</button>
               </div>
             ))}
             {collabCodes.map((code: Code, idx: number) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center bg-gray-800 p-4 rounded-md"
-              >
-                <Link
-                  href={`/code/${code.id}`}
-                  className="text-blue-400 hover:underline"
-                >
-                  {code.id}
-                </Link>
+              <div key={idx}>
+                <Link href={`/code/${code.id}`}>{code.id}</Link>
                 <span>{code.file_name}</span>
-                <button
-                  onClick={() => handleDelete(code.id)}
-                  className="text-red-400 hover:text-red-600 transition"
-                >
-                  Delete
-                </button>
+                <button onClick={() => handleDelete(code.id)}>Delete</button>
               </div>
             ))}
           </div>

@@ -51,17 +51,9 @@ export default function CreateCode({ onCodeCreate }: CreateCodeProps) {
 
   return (
     <>
-      <form
-        onSubmit={handleCreate}
-        className={`my-8 ${poppins.className} flex justify-center`}
-      >
-        <div className="w-full max-w-2xl p-3 rounded-lg border-2 border-gray-500 flex flex-col sm:flex-row gap-3 sm:gap-2">
-          <select
-            name="language"
-            value={file.language}
-            onChange={handleChange}
-            className="block outline-none rounded-md py-2 px-3 bg-white/10 w-full sm:w-auto"
-          >
+      <form onSubmit={handleCreate}>
+        <div>
+          <select name="language" value={file.language} onChange={handleChange}>
             <option value="cpp">C++</option>
             <option value="c">C</option>
             <option value="python">Python</option>
@@ -73,16 +65,9 @@ export default function CreateCode({ onCodeCreate }: CreateCodeProps) {
             placeholder="Type the name of your file"
             value={file.fileName}
             onChange={handleChange}
-            className="outline-none grow py-2 px-3 bg-white/5 rounded-md"
           />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`rounded-md px-4 py-2 bg-white/10 hover:bg-white/20 duration-300 w-full sm:w-auto ${
-              loading ? "cursor-wait" : "cursor-pointer"
-            }`}
-          >
+          <button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Create"}
           </button>
         </div>
