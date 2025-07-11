@@ -43,7 +43,7 @@ export default function Home() {
       <main>
         <CreateCode onCodeCreate={handleCodeCreated} />
         {data && (
-          <div>
+          <div className="mt-12">
             {ownedCodes.map((code: Code, idx: number) => (
               <div key={idx}>
                 <Link href={`/code/${code.id}`}>{code.id}</Link>

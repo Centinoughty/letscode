@@ -2,10 +2,16 @@
 
 import { RootState } from "@/store/store";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
+import NavbarDark from "./NavbarDark";
 
 export default function Navbar() {
+  const pathname = usePathname();
   const user = useSelector((state: RootState) => state.auth.user);
+
+  let x: any;
+  if (pathname.startsWith("/code/")) return <NavbarDark />;
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -14,7 +20,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="absolute top-0 left-0 h-16 w-full border-b border-[#C4C7C5] bg-[#FFFFFF]">
+    <nav className="fixed top-0 left-0 h-16 w-full border-b border-[#C4C7C5] bg-[#FFFFFF]">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
           <Link href="/" aria-label="Homepage">

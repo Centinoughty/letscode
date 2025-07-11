@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect, useState, ChangeEvent } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { getAuthToken } from "@/util/security";
+
 import "monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
 
@@ -70,12 +71,12 @@ export default function Editor() {
       language: "cpp",
       theme: "vs-dark",
       cursorBlinking: "smooth",
-      cursorSmoothCaretAnimation: "on",
-      scrollBeyondLastLine: false,
+      // cursorSmoothCaretAnimation: "on",
+      scrollBeyondLastLine: true,
       minimap: { enabled: false },
       padding: {
-        top: 10,
-        bottom: 10,
+        top: 5,
+        bottom: 5,
       },
     });
 
@@ -189,6 +190,12 @@ export default function Editor() {
 
     setup();
 
+    const handleResize = () => {
+      editorRef.current?.layout();
+    };
+
+    window.addEventListener("resize", handleResize);
+
     return () => {
       if (socketRef.current) {
         socketRef.current.off("connect");
@@ -215,7 +222,7 @@ export default function Editor() {
 
   return (
     <>
-      <div id="editor" className="h-[90vh]"></div>
+      <div id="editor" className="pt-16 h-[calc(100vh-4rem)]"></div>
     </>
   );
 }
