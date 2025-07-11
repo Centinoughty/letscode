@@ -6,9 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useRef, useEffect, useState, ChangeEvent } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { getAuthToken } from "@/util/security";
-
-import "monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution";
-import "monaco-editor/esm/vs/basic-languages/python/python.contribution";
+import { poppins, roboto } from "@/styles/fonts";
+import Chat from "@/components/Chat/Chat";
 
 const clientId = uuidv4();
 const SOCKET_SERVER = process.env.NEXT_PUBLIC_SOCKET_SERVER;
@@ -36,6 +35,12 @@ export default function Editor() {
   const isEditorInit = useRef<boolean>(false);
   const isApplyingChange = useRef<boolean>(false);
 
+  // Non Editor State
+  const [commsTab, setCommsTab] = useState<"chat" | "desc">("chat");
+  const [streamTab, setStreamTab] = useState<"stdin" | "stdout" | "stderr">(
+    "stdin"
+  );
+
   // Chat
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
@@ -62,6 +67,10 @@ export default function Editor() {
       return;
 
     const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
+    await import("monaco-editor/esm/vs/basic-languages/cpp/cpp.contribution");
+    await import(
+      "monaco-editor/esm/vs/basic-languages/python/python.contribution"
+    );
 
     monacoRef.current = monaco;
 
@@ -184,7 +193,10 @@ export default function Editor() {
 
   useEffect(() => {
     const setup = async () => {
-      await initializeMonaco();
+      if (typeof window !== undefined) {
+        await initializeMonaco();
+      }
+
       connectSocket();
     };
 
@@ -220,9 +232,87 @@ export default function Editor() {
     };
   }, [pathname]);
 
+  const activeTab = "bg-[#2a2d2e]";
+
   return (
     <>
-      <div id="editor" className="pt-16 h-[calc(100vh-4rem)]"></div>
+      <div className="flex pt-16 h-screen">
+        <div id="editor" className="w-[75%] h-full"></div>
+
+        <div className="w-[25%] h-full flex flex-col border-l border-gray-700 bg-[#1e1e1e] text-white text-sm tracking-wide">
+          <div className="flex-1 border-b border-gray-700 flex flex-col">
+            <div className="p-2 flex gap-3 border-b border-gray-700">
+              <button
+                onClick={() => setCommsTab("chat")}
+                className={`px-4 py-1.5 rounded-md text-center hover:bg-[#2a2d2e] cursor-pointer ${
+                  commsTab === "chat" ? activeTab : ""
+                }`}
+              >
+                Chat
+              </button>
+              <button
+                onClick={() => setCommsTab("desc")}
+                className={`px-4 py-1.5 rounded-md text-center hover:bg-[#2a2d2e] cursor-pointer ${
+                  commsTab === "desc" ? activeTab : ""
+                }`}
+              >
+                Description
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-2">
+              {commsTab === "chat" ? (
+                <Chat
+                  message={message}
+                  allMessages={allMessages}
+                  setMessage={handleMessageChange}
+                  sendMessage={sendMessage}
+                />
+              ) : (
+                <p>
+                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+                  Eligendi, optio! Dolorum maxime alias expedita autem veritatis
+                  praesentium sapiente ad eum. Officiis animi earum explicabo
+                  labore. Asperiores hic aut enim odit?
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1  flex flex-col">
+            <div className="p-2 flex gap-3 border-b border-gray-700">
+              <button
+                onClick={() => setStreamTab("stdin")}
+                className={`px-4 py-1.5 rounded-md text-center hover:bg-[#2a2d2e] cursor-pointer ${
+                  streamTab === "stdin" ? activeTab : ""
+                }`}
+              >
+                Test Cases
+              </button>
+              <button
+                onClick={() => setStreamTab("stdout")}
+                className={`px-4 py-1.5 rounded-md text-center hover:bg-[#2a2d2e] cursor-pointer ${
+                  streamTab === "stdout" ? activeTab : ""
+                }`}
+              >
+                Stdout
+              </button>
+              <button
+                onClick={() => setStreamTab("stderr")}
+                className={`px-4 py-1.5 rounded-md text-center hover:bg-[#2a2d2e] cursor-pointer ${
+                  streamTab === "stderr" ? activeTab : ""
+                }`}
+              >
+                Error
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-2">
+              <p className="text-sm text-gray-300">
+                Test Cases or Stdout output goes here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

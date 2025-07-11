@@ -69,7 +69,7 @@ const setupSocket = (io) => {
       io.to(roomId).emit("message", {
         sender: username,
         message,
-        time: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
       });
     });
 
