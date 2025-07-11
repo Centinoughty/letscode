@@ -1,3 +1,4 @@
+import FeatureCard from "@/components/Card/FeatureCard";
 import Footer from "@/components/Footer/Footer";
 import { roboto } from "@/styles/fonts";
 import Link from "next/link";

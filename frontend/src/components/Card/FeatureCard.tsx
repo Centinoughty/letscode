@@ -1,4 +1,4 @@
-const FeatureCard = ({
+export default function FeatureCard({
   icon,
   title,
   description,
@@ -6,7 +6,7 @@ const FeatureCard = ({
   icon: string;
   title: string;
   description: string;
-}) => {
+}) {
   return (
     <>
       <div className="flex flex-col items-start p-6 bg-white border border-gray-200 rounded-xl transition-all hover:shadow-lg hover:border-transparent">
@@ -18,4 +18,4 @@ const FeatureCard = ({
       </div>
     </>
   );
-};
+}
