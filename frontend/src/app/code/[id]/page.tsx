@@ -79,7 +79,7 @@ export default function Editor() {
       language: "cpp",
       theme: "vs-dark",
       cursorBlinking: "smooth",
-      // cursorSmoothCaretAnimation: "on",
+      cursorSmoothCaretAnimation: "on",
       scrollBeyondLastLine: true,
       minimap: { enabled: false },
       padding: {
