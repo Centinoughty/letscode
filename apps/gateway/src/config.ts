@@ -1,5 +1,5 @@
 export const config = {
-    PORT: Number(process.env.PORT || 5000),
+    PORT: Number(process.env.GATEWAY_PORT || 5000),
     JWT_PUBLIC_KEY: process.env.JWT_PUBLIC_KEY!,
     SERVICES: {
         auth: "http://auth:3000",
