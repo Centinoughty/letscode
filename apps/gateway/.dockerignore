@@ -1,0 +1,35 @@
+# ---- Node / npm ----
+node_modules
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+
+# ---- Build output ----
+dist
+coverage
+*.tsbuildinfo
+
+# ---- VCS ----
+.git
+.gitignore
+
+# ---- Editor / IDE ----
+.vscode
+.idea
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+
+# ---- Env files ----
+.env
+.env.*
+!.env.example
+
+# ---- Docker ----
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+
+# ---- Misc ----
+*.log
