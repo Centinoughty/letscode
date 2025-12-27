@@ -1,0 +1,47 @@
+# --- Node ---
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# --- Build output ---
+dist
+build
+.next
+out
+
+# --- Env files ---
+.env
+.env.*
+!.env.example
+
+# --- Prisma ---
+prisma/migrations
+prisma/dev.db
+prisma/*.db
+
+# --- Logs ---
+logs
+*.log
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# --- Git ---
+.git
+.gitignore
+
+# --- Docker ---
+Dockerfile
+docker-compose.yml
+
+# --- Tests / Docs ---
+coverage
+*.md
+
+# --- Misc ---
+tmp
+.cache
