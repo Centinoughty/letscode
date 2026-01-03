@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: letscode-postgres
+    environment:
+      POSTGRES_USER: letscode
+      POSTGRES_PASSWORD: letscode
+      POSTGRES_DB: letscode_auth
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: letscode-redis
+    ports:
+      - "6379:6379"
+
+  gateway:
+    build:
+      context: ./services/gateway
+    container_name: letscode-gateway
+    env_file:
+      - ./services/gateway/.env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth
+
+  auth:
+    build:
+      context: ./services/auth
+    container_name: letscode-auth
+    env_file:
+      - ./services/auth/.env
+    depends_on:
+      - postgres
+      - redis
+    expose:
+      - "5000"
+
+volumes:
+  pgdata:
