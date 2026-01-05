@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { prisma } from "../lib/prisma";
+import { signToken } from "../utils/jwt";
+import { AuthenticatedRequest } from "../types/request";
 
+// -- -- -- REGISTER USER -- -- --
+// function to create an account for a user
 export async function register(req: Request, res: Response) {
   try {
     const { username, email, password } = req.body;
@@ -65,6 +69,8 @@ export async function register(req: Request, res: Response) {
   }
 }
 
+// -- -- -- LOGIN USER -- -- --
+// function to login a user and generate a JWT token
 export async function login(req: Request, res: Response) {
   try {
     const { identifier, password } = req.body;
@@ -97,6 +103,8 @@ export async function login(req: Request, res: Response) {
         .json({ message: "Invalid username/email or password" });
     }
 
+    const token = signToken({ userId: user.id });
+
     // -- -- -- login success -- -- --
     return res.status(200).json({
       message: "login success",
@@ -106,7 +114,37 @@ export async function login(req: Request, res: Response) {
         email: user.email,
         createdAt: user.createdAt,
       },
+      token,
     });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// -- -- -- GET USER DATA -- -- --
+// function to get the user data from the token
+export async function getUserData(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const profile = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    if (!profile) {
+      return res.status(403).json({ message: "Forbidden: Cannot access page" });
+    }
+
+    return res.status(200).json(profile);
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
