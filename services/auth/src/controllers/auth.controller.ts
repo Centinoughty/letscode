@@ -149,3 +149,24 @@ export async function getUserData(req: AuthenticatedRequest, res: Response) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// -- -- -- DELETE USER ACCOUNT -- -- --
+// function to delete the user account
+export async function deleteUser(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return res
+      .status(204)
+      .json({ message: "User account deleted succesfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
