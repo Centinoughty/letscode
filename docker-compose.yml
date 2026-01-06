@@ -39,6 +39,18 @@ services:
       - redis
     expose:
       - "5000"
+  
+  workspace:
+    build:
+      context: ./services/workspace
+    container_name: letscode-workspace
+    env_file:
+      - ./services/workspace/.env
+    depends_on:
+      - postgres
+      - redis
+    expose:
+      - "5000"
 
 volumes:
   pgdata:
