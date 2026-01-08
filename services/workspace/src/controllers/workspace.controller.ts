@@ -109,3 +109,47 @@ export async function deleteWorkspace(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// -- -- -- ADD COLLABORATOR -- -- --
+// function to add a collaborator to workspace
+export async function addCollaborator(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const { workspaceId } = req.params;
+    const { memberId, permission } = req.body;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId, ownerId: userId },
+      select: { id: true },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    const newMember = await prisma.workspaceMember.create({
+      data: {
+        workspaceId,
+        userId: memberId,
+        permission,
+      },
+      select: {
+        id: true,
+        userId: true,
+        permission: true,
+        createdAt: true,
+      },
+    });
+
+    return res.status(201).json({ message: "Added collaborator", newMember });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
