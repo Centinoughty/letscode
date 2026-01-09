@@ -13,7 +13,7 @@ const router = Router();
 
 router.post("/create", createWorkspace);
 router.get("/", listWorkspaces);
-router.delete("/:id", deleteWorkspace);
+router.delete("/:workspaceId", deleteWorkspace);
 
 router.get("/:workspaceId/members", listCollaborators);
 router.post("/:workspaceId/members", addCollaborator);

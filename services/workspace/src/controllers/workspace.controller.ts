@@ -79,7 +79,7 @@ export async function deleteWorkspace(
       return res.status(401).json({ message: "User not authorized" });
     }
 
-    const workspaceId = req.params.id;
+    const { workspaceId } = req.params;
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
       select: { ownerId: true },
