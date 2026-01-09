@@ -3,6 +3,7 @@ import {
   addCollaborator,
   createWorkspace,
   deleteWorkspace,
+  listCollaborators,
   listWorkspaces,
   removeCollaborator,
   updateCollaborator,
@@ -14,6 +15,7 @@ router.post("/create", createWorkspace);
 router.get("/", listWorkspaces);
 router.delete("/:id", deleteWorkspace);
 
+router.get("/:workspaceId/members", listCollaborators);
 router.post("/:workspaceId/members", addCollaborator);
 router.patch("/:workspaceId/members", updateCollaborator);
 router.delete("/:workspaceId/members", removeCollaborator);

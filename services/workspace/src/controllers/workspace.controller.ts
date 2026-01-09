@@ -110,6 +110,66 @@ export async function deleteWorkspace(
   }
 }
 
+// -- -- -- LIST ALL COLLABORATORS -- -- --
+// function to list all the collaborators
+export async function listCollaborators(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authorized" });
+    }
+
+    const { workspaceId } = req.params;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    const member = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId, userId } },
+    });
+
+    if (!member) {
+      return res
+        .status(403)
+        .json({ message: "Cannot view the members of this workspace" });
+    }
+
+    const allMembers = await prisma.workspace.findMany({
+      where: { id: workspaceId },
+      select: {
+        id: true,
+        name: true,
+        ownerId: true,
+        workspaceMembers: {
+          select: {
+            id: true,
+            userId: true,
+            permission: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return res.status(200).json({
+      data: allMembers,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 // -- -- -- ADD COLLABORATOR -- -- --
 // function to add a collaborator to workspace
 export async function addCollaborator(
