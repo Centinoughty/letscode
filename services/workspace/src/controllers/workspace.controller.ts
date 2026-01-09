@@ -126,19 +126,40 @@ export async function addCollaborator(
     const { memberId, permission } = req.body;
 
     const workspace = await prisma.workspace.findUnique({
-      where: { id: workspaceId, ownerId: userId },
-      select: { id: true },
+      where: { id: workspaceId },
+      select: { ownerId: true },
     });
 
     if (!workspace) {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
+    if (workspace.ownerId !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to add a collaborator" });
+    }
+
+    // check if the member already exists
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: memberId,
+        },
+      },
+    });
+
+    if (member) {
+      return res.status(409).json({ message: "Collaborator already exists" });
+    }
+
+    // create a new member
     const newMember = await prisma.workspaceMember.create({
       data: {
         workspaceId,
         userId: memberId,
-        permission,
+        permission: permission || "10",
       },
       select: {
         id: true,
@@ -149,6 +170,67 @@ export async function addCollaborator(
     });
 
     return res.status(201).json({ message: "Added collaborator", newMember });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// -- -- -- UPDATE COLLABORATOR -- -- --
+// function to update a collaborator permission level
+export async function updateCollaborator(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authorized" });
+    }
+
+    const { workspaceId } = req.params;
+    const { memberId, permission } = req.body;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { ownerId: true },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    if (workspace.ownerId !== userId) {
+      return res.status(403).json({
+        message: "Not authorized to update the collaborator permission level",
+      });
+    }
+
+    // check if member exists or not
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: memberId,
+        },
+      },
+    });
+
+    if (!member) {
+      return res.status(404).json({ message: "Collaborator not found" });
+    }
+
+    // update the member permission
+    await prisma.workspaceMember.updateMany({
+      where: {
+        workspaceId,
+        userId: memberId,
+      },
+      data: {
+        permission,
+      },
+    });
+
+    return res.status(200).json({ message: "Collaborator updated" });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -186,6 +268,27 @@ export async function removeCollaborator(
       return res
         .status(403)
         .json({ message: "Not authorized to remove the collaborator" });
+    }
+
+    // cannot remove owner from collaborator
+    if (workspace.ownerId === memberId) {
+      return res
+        .status(400)
+        .json({ message: "Cannot remove owner from collaborator" });
+    }
+
+    // remove only if a member exists
+    const member = await prisma.workspaceMember.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: memberId,
+        },
+      },
+    });
+
+    if (!member) {
+      return res.status(404).json({ message: "Collaborator not found" });
     }
 
     // remove the memer from workspace
