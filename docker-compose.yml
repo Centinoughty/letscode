@@ -39,7 +39,7 @@ services:
       - redis
     expose:
       - "5000"
-  
+
   workspace:
     build:
       context: ./services/workspace
@@ -51,7 +51,7 @@ services:
       - redis
     expose:
       - "5000"
-  
+
   code:
     build:
       context: ./services/code
@@ -63,6 +63,17 @@ services:
       - redis
     expose:
       - "5000"
+
+  client:
+    build:
+      context: ./services/client
+    container_name: letscode-client
+    env_file:
+      - ./services/client/.env
+    depends_on:
+      - gateway
+    ports:
+      - "3000:3000"
 
 volumes:
   pgdata:
