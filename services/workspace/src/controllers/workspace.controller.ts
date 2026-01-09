@@ -11,7 +11,7 @@ export async function createWorkspace(
   try {
     const userId = req.headers["x-user-id"];
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "User not authorized" });
     }
 
     const { name } = req.body;
@@ -46,7 +46,7 @@ export async function listWorkspaces(req: AuthenticatedRequest, res: Response) {
   try {
     const userId = req.headers["x-user-id"];
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "User not authorized" });
     }
 
     const workspaces = await prisma.workspace.findMany({
@@ -76,7 +76,7 @@ export async function deleteWorkspace(
   try {
     const userId = req.headers["x-user-id"];
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "User not authorized" });
     }
 
     const workspaceId = req.params.id;
@@ -119,7 +119,7 @@ export async function addCollaborator(
   try {
     const userId = req.headers["x-user-id"];
     if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ message: "User not authorized" });
     }
 
     const { workspaceId } = req.params;
@@ -149,6 +149,56 @@ export async function addCollaborator(
     });
 
     return res.status(201).json({ message: "Added collaborator", newMember });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// -- -- -- REMOVE COLLABORATOR -- -- --
+// function to remove a collaborator
+export async function removeCollaborator(
+  req: AuthenticatedRequest,
+  res: Response
+) {
+  try {
+    // check if user is authenticated
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({ message: "User not authorized" });
+    }
+
+    // validate the request
+    const { workspaceId } = req.params;
+    const { memberId } = req.body;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { ownerId: true },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    // check if the user is authorized to perform the action
+    // check if the user is the owner of the workspace
+    if (workspace.ownerId !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to remove the collaborator" });
+    }
+
+    // remove the memer from workspace
+    await prisma.workspaceMember.delete({
+      where: {
+        workspaceId_userId: {
+          workspaceId,
+          userId: memberId,
+        },
+      },
+    });
+
+    return res.status(200).json({ message: "Collaborator removed" });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
