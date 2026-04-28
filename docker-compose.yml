@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lc-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - lc-db:/var/lib/postgresql/data
+    networks:
+      - lc-net
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: lc-server
+    env_file:
+      - ./server/.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server:/app
+    networks:
+      - lc-net
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: lc-client
+    env_file:
+      - ./client/.env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - lc-net
+
+volumes:
+  lc-db:
+    name: lc-db
+
+networks:
+  lc-net:
+    name: lc-net
+    driver: bridge
