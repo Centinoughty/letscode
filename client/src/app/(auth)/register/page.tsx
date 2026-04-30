@@ -6,6 +6,7 @@ import Divider from "@/components/ui/Divider";
 import Input from "@/components/ui/Input";
 import { useAuthStore } from "@/store/useAuthStore";
 import { poppins } from "@/styles/font";
+import { useGoogleLogin } from "@react-oauth/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SyntheticEvent, useState } from "react";
@@ -32,6 +33,12 @@ export default function RegisterPage() {
       router.push("/");
     }
   }
+
+  const loginWithGoogleRedirect = useGoogleLogin({
+    flow: "auth-code",
+    ux_mode: "redirect",
+    redirect_uri: "http://localhost:3000/auth/callback",
+  });
 
   return (
     <>
@@ -88,9 +95,13 @@ export default function RegisterPage() {
 
           <Divider />
 
-          <button className="p-2 w-full flex justify-center items-center gap-2 font-medium border border-black/20">
+          <button
+            type="button"
+            onClick={() => loginWithGoogleRedirect()}
+            className="p-2 w-full flex justify-center items-center gap-2 font-medium border border-black/20"
+          >
             <Google className="w-8 aspect-square" />
-            Sign up with Google
+            Sign in with Google
           </button>
 
           <div className="flex gap-2 text-sm">
