@@ -3,6 +3,12 @@ import { prisma } from "../../lib/prisma";
 import { TypedRequest } from "../../types/request";
 import { UserLoginBody, UserRegisterBody } from "./auth.schema";
 import { hashPassword, verifyPassword } from "../../utils/password";
+import {
+  accessCookieOptions,
+  refreshCookieOptions,
+  signAccessToken,
+  signRefreshToken,
+} from "../../utils/token";
 
 export async function registerUser(
   req: TypedRequest<{}, UserRegisterBody, {}>,
@@ -34,6 +40,14 @@ export async function registerUser(
         password: hashedPassword,
       },
     });
+
+    // create cookie
+    const tokenPayload = { id: newUser.id, email: newUser.email };
+    const accessToken = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    res.cookie("accessToken", accessToken, accessCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
     return res.status(201).json({
       message: "User created succefully",
@@ -81,6 +95,14 @@ export async function loginUser(
     if (!isPasswordMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    // create cookie
+    const tokenPayload = { id: user.id, email: user.email };
+    const accessToken = signAccessToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+
+    res.cookie("accessToken", accessToken, accessCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
     return res.status(200).json({
       message: "User logged in succefully",
