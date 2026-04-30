@@ -10,6 +10,7 @@ const envSchema = z.object({
   PORT: z.string().transform(Number),
   DATABASE_URL: z.url(),
   DATABASE_DIRECT_URL: z.url(),
+  SALT_ROUNDS: z.string().transform(Number),
 });
 
 export const env = envSchema.parse(process.env);

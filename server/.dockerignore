@@ -1,0 +1,32 @@
+# Version control
+.git
+.github
+.gitignore
+
+# Dependencies (will be installed inside the container)
+node_modules
+**/node_modules
+
+# Build outputs and temporary files
+dist
+build
+*.log
+npm-debug.log*
+.coverage
+coverage
+.cache
+.eslintcache
+
+# Environment and sensitive files
+.env
+.aws
+.npmrc
+
+# Editor and OS specific files
+.vscode
+.DS_Store
+Thumbs.db
+
+# Docker specific files
+Dockerfile*
+*docker-compose*
