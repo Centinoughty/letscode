@@ -11,5 +11,10 @@ export const UserLoginBody = z.object({
   password: z.string(),
 });
 
+export const GoogleLoginBody = z.object({
+  code: z.string(),
+});
+
 export type UserRegisterBody = z.infer<typeof UserRegisterBody>;
 export type UserLoginBody = z.infer<typeof UserLoginBody>;
+export type GoogleLoginBody = z.infer<typeof GoogleLoginBody>;

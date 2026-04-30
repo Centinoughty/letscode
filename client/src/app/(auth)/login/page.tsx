@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 import Divider from "@/components/ui/Divider";
 import Input from "@/components/ui/Input";
 import { poppins } from "@/styles/font";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,6 +32,12 @@ export default function LoginPage() {
       router.push("/");
     }
   }
+
+  const loginWithGoogleRedirect = useGoogleLogin({
+    flow: "auth-code",
+    ux_mode: "redirect",
+    redirect_uri: "http://localhost:3000/auth/callback",
+  });
 
   return (
     <>
@@ -74,7 +81,11 @@ export default function LoginPage() {
 
           <Divider />
 
-          <button className="p-2 w-full flex justify-center items-center gap-2 font-medium border border-black/20">
+          <button
+            type="button"
+            onClick={() => loginWithGoogleRedirect()}
+            className="p-2 w-full flex justify-center items-center gap-2 font-medium border border-black/20"
+          >
             <Google className="w-8 aspect-square" />
             Sign in with Google
           </button>
