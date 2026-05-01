@@ -4,6 +4,7 @@ import { create } from "zustand";
 interface User {
   name?: string;
   email: string;
+  avatar?: string;
 }
 
 interface AuthState {
@@ -15,6 +16,9 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: (code: string) => Promise<void>;
+
+  getUser: () => Promise<void>;
+
   logout: () => void;
 }
 
@@ -55,7 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         password,
       });
 
-      if (status == 200) {
+      if (status == 201) {
         set({
           user: data.user,
           isAuthenticated: true,
@@ -82,6 +86,24 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } catch (error) {
       set({ error: "error", isLoading: false });
+    }
+  },
+
+  getUser: async () => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data, status } = await api.get("/user/me");
+
+      if (status === 200) {
+        set({
+          user: data.user,
+          isAuthenticated: true,
+          error: null,
+        });
+      }
+    } catch (error) {
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 

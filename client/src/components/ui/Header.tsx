@@ -1,9 +1,14 @@
+"use client";
+
 import { Bell, Search, Settings } from "lucide-react";
 import Input from "./Input";
 import Image from "next/image";
 import Button from "./Button";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Header() {
+  const { user } = useAuthStore();
+
   return (
     <>
       <header className="p-2 flex justify-between border-b border-gray-200">
@@ -29,8 +34,8 @@ export default function Header() {
           </button>
 
           <Image
-            src="https://i.pravatar.cc/100"
-            alt="sf"
+            src={user?.avatar || "https://i.pravatar.cc/100"}
+            alt={user?.name || "pravatar"}
             width={35}
             height={35}
             className="rounded-full"

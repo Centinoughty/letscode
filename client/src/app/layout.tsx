@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/common/Providers";
+import { AuthProvider } from "@/components/common/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Letscode",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased bg-neutral`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthProvider>{children}</AuthProvider>
+        </Providers>
       </body>
     </html>
   );

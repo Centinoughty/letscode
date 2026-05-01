@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 
 import authRoutes from "./modules/auth/auth.route";
+import userRoutes from "./modules/user/user.route";
 import workspaceRoutes from "./modules/workspace/workspace.route";
 
 export function startServer() {
@@ -24,6 +25,7 @@ export function startServer() {
   });
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/user", userRoutes);
   app.use("/api/workspace", workspaceRoutes);
 
   app.listen(env.PORT, () => {

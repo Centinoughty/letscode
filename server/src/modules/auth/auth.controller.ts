@@ -63,7 +63,11 @@ export async function registerUser(
 
     return res.status(201).json({
       message: "User created succefully",
-      user: { name: newUser.name, email: newUser.email },
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+        avatar: newUser.avatar,
+      },
     });
   } catch (error) {
     console.log("USER_REGISTER_ERROR", error);
@@ -118,7 +122,7 @@ export async function loginUser(
 
     return res.status(200).json({
       message: "User logged in succefully",
-      user: { name: user.name, email: user.email },
+      user: { name: user.name, email: user.email, avatar: user.avatar },
     });
   } catch (error) {
     console.log("USER_LOGIN_ERROR", error);
@@ -202,7 +206,11 @@ export async function googleLogin(
 
     return res.status(200).json({
       message: "Google user logged in successfully",
-      user: { name: googleUser.name, email: googleUser.email },
+      user: {
+        name: googleUser.name,
+        email: googleUser.email,
+        avatar: googleUser.avatar,
+      },
     });
   } catch (error) {
     console.log("GOOGLE_LOGIN_ERROR", error);
