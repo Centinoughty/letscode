@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 
 import authRoutes from "./modules/auth/auth.route";
+import workspaceRoutes from "./modules/workspace/workspace.route";
 
 export function startServer() {
   const app = express();
@@ -23,6 +24,7 @@ export function startServer() {
   });
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/workspace", workspaceRoutes);
 
   app.listen(env.PORT, () => {
     console.log(`Listening on port ${env.PORT}`);

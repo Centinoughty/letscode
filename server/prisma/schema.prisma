@@ -8,6 +8,7 @@ datasource db {
   directUrl = env("DATABASE_DIRECT_URL")
 }
 
+// User
 model User {
   id          String  @id @default(uuid())
   name        String?
@@ -18,6 +19,69 @@ model User {
   is_verified Boolean @default(false)
   is_admin    Boolean @default(false)
   is_active   Boolean @default(true)
+
+  codes      Code[]
+  workspaces Workspace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Code and Workspace
+enum FileType {
+  FILE
+  DIRECTORY
+}
+
+enum FileExt {
+  cpp
+  py
+  txt
+}
+
+model Node {
+  id         String   @id @default(uuid())
+  name       String
+  type       FileType
+  path       String
+  contentKey String
+  extension  FileExt?
+
+  parentId String?
+  parent   Node?   @relation("Tree", fields: [parentId], references: [id], onDelete: Cascade)
+  children Node[]  @relation("Tree")
+
+  code Code?
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  workspaces Workspace[]
+
+  @@unique([path, contentKey])
+  @@index([parentId])
+}
+
+model Code {
+  id String @id @default(uuid())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  fileId String @unique
+  file   Node   @relation(fields: [fileId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Workspace {
+  id String @id @default(uuid())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  rootId String
+  root   Node   @relation(fields: [rootId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

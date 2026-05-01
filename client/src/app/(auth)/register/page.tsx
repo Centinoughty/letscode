@@ -30,7 +30,7 @@ export default function RegisterPage() {
     // if authenticated, continue to dashboard
     const currentStoreState = useAuthStore.getState();
     if (currentStoreState.isAuthenticated) {
-      router.push("/");
+      router.push("/dashboard");
     }
   }
 

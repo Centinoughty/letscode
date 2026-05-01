@@ -26,7 +26,7 @@ export default function AuthCallbackPage() {
       loginWithGoogle(code).then(() => {
         const state = useAuthStore.getState();
         if (state.isAuthenticated) {
-          router.push("/");
+          router.push("/dashboard");
         } else {
           router.push("/login");
         }
