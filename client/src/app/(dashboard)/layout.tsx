@@ -5,12 +5,13 @@ import { ReactNode } from "react";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className="flex">
+      <div className="flex h-screen overflow-hidden">
         <Sidebar />
 
-        <div className="p-2 pt-1 w-full">
+        <div className="flex-1 p-2 pt-1 min-w-0 flex flex-col overflow-hidden">
           <Header />
-          {children}
+
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
         </div>
       </div>
     </>

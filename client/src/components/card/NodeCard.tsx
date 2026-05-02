@@ -1,25 +1,75 @@
-import { Code, Diamond } from "lucide-react";
+"use client";
+
+import { Code2, Folder, MoreVertical } from "lucide-react";
+import clsx from "clsx";
 
 interface NodeCardProps {
-  NodeType: "FILE" | "DIRECTORY";
+  type: "FILE" | "WORKSPACE";
   name: string;
+  language?: string;
+  lastEdited?: string;
+  collaborators?: number;
+  isOwned?: boolean;
 }
 
-export default function NodeCard(node: NodeCardProps) {
+export default function NodeCard({
+  type,
+  name,
+  language,
+  lastEdited,
+  collaborators = 1,
+  isOwned = true,
+}: NodeCardProps) {
   return (
     <>
-      <div className="aspect-square">
-        <div className="flex justify-between">
-          <div>{node.NodeType === "FILE" ? <Code /> : <Diamond />}</div>
+      <div className="flex flex-col gap-3 border border-gray-200 rounded-xl bg-white p-3 transition cursor-pointer">
+        <div className="flex items-start justify-between">
+          <div className="p-2 rounded-lg bg-gray-100">
+            {type === "FILE" ? (
+              <Code2 size={18} className="text-primary" />
+            ) : (
+              <Folder size={18} className="text-primary" />
+            )}
+          </div>
 
-          <div></div>
+          <div className="flex items-center gap-2">
+            <span
+              className={clsx(
+                "text-xs px-2 py-1 rounded-full font-medium",
+                isOwned
+                  ? "bg-primary/20 text-primary"
+                  : "bg-gray-200 text-gray-600",
+              )}
+            >
+              {isOwned ? "OWNED BY YOU" : "SHARED"}
+            </span>
+
+            <button className="p-1 rounded-full hover:bg-gray-100">
+              <MoreVertical size={16} />
+            </button>
+          </div>
         </div>
 
-        <div></div>
+        {language && (
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span className="w-2 h-2 rounded-full bg-yellow-400" />
+            {language.toUpperCase()}
+          </div>
+        )}
 
-        <p>{node.name}</p>
+        <p className="text-sm font-medium truncate">{name}</p>
 
-        <div></div>
+        <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-gray-500">
+          <div>
+            <p className="uppercase tracking-wide text-xs">Last edited</p>
+            <p className="text-sm text-gray-600">{lastEdited || "-"}</p>
+          </div>
+
+          <div className="text-right">
+            <p className="uppercase tracking-wide text-xs">Team size</p>
+            <p className="text-sm text-gray-600">{collaborators}</p>
+          </div>
+        </div>
       </div>
     </>
   );

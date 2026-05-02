@@ -1,10 +1,10 @@
 "use client";
 
 import NodeCard from "@/components/card/NodeCard";
-import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { mont } from "@/styles/font";
+import { formatDate } from "@/util/formatDate";
 import { useEffect } from "react";
 
 export default function DashboardPage() {
@@ -31,13 +31,32 @@ export default function DashboardPage() {
 
         <div>
           <h2 className="font-medium text-xl">My Files</h2>
-          {codes.map((item) => (
-            <NodeCard name={item.file.name} NodeType="FILE" />
-          ))}
+
+          <div className="grid grid-cols-4">
+            {codes.map((item, idx) => (
+              <NodeCard
+                key={idx}
+                name={item.file.name}
+                type="FILE"
+                lastEdited={formatDate(item.updatedAt)}
+              />
+            ))}
+          </div>
         </div>
 
         <div>
           <h2 className="font-medium text-xl">Workspaces</h2>
+
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {workspaces.map((item, idx) => (
+              <NodeCard
+                key={idx}
+                name={item.root.name}
+                type="WORKSPACE"
+                lastEdited={formatDate(item.updatedAt)}
+              />
+            ))}
+          </div>
         </div>
       </main>
     </>

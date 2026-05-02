@@ -90,7 +90,7 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPass(e.target.value)}
             />
 
-            <Button label="Create account" />
+            <Button type="submit" label="Create account" />
           </form>
 
           <Divider />

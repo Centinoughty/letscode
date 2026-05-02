@@ -76,7 +76,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button label="Sign in" />
+            <Button type="submit" label="Sign in" />
           </form>
 
           <Divider />

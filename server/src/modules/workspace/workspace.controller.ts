@@ -57,6 +57,9 @@ export async function getWorkspaces(req: TypedRequest, res: Response) {
       where: {
         ownerId: id,
       },
+      include: {
+        root: true,
+      },
     });
 
     res.status(200).json({ message: "Fetched all workspaces", workspaces });

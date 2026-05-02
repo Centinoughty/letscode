@@ -5,9 +5,16 @@ import Input from "./Input";
 import Image from "next/image";
 import Button from "./Button";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useState } from "react";
+import Modal from "./Modal";
+import CodeModal from "../modal/CodeModal";
+import WorkspaceModal from "../modal/WorkspaceModal";
 
 export default function Header() {
   const { user } = useAuthStore();
+
+  const [isCodeOpen, setIsCodeOpen] = useState<boolean>(false);
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState<boolean>(false);
 
   return (
     <>
@@ -21,9 +28,17 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Button label="+ Code" className="rounded-lg" />
+          <Button
+            onClick={() => setIsCodeOpen(true)}
+            label="+ Code"
+            className="rounded-lg"
+          />
 
-          <Button label="+ Workspace" className="rounded-lg" />
+          <Button
+            onClick={() => setIsWorkspaceOpen(true)}
+            label="+ Workspace"
+            className="rounded-lg"
+          />
 
           <button className="hover:bg-gray-100 transition">
             <Bell size={24} className="text-gray-600" />
@@ -42,6 +57,15 @@ export default function Header() {
           />
         </div>
       </header>
+
+      {/* Modal component for Code form */}
+      <CodeModal isOpen={isCodeOpen} onClose={() => setIsCodeOpen(false)} />
+
+      {/* Modal component for Workspace form */}
+      <WorkspaceModal
+        isOpen={isWorkspaceOpen}
+        onClose={() => setIsWorkspaceOpen(false)}
+      />
     </>
   );
 }

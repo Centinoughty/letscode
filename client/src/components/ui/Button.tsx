@@ -5,14 +5,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 
-export default function Button({ label, className }: ButtonProps) {
+export default function Button({
+  label,
+  className,
+  type = "button",
+  ...props
+}: ButtonProps) {
   return (
-    <>
-      <button
-        className={`p-2 bg-primary text-neutral ${className}`}
-      >
-        {label}
-      </button>
-    </>
+    <button
+      type={type}
+      className={`p-2 bg-primary outline-none text-neutral ${className}`}
+      {...props}
+    >
+      {label}
+    </button>
   );
 }
