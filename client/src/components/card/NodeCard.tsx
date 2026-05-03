@@ -61,12 +61,14 @@ export default function NodeCard({
 
         <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-gray-500">
           <div>
-            <p className="uppercase tracking-wide text-xs">Last edited</p>
+            <p className="uppercase text-xs">Last edited</p>
             <p className="text-sm text-gray-600">{lastEdited || "-"}</p>
           </div>
 
           <div className="text-right">
-            <p className="uppercase tracking-wide text-xs">Team size</p>
+            <p className="uppercase text-xs">
+              {type === "FILE" ? "Team size" : "Members"}
+            </p>
             <p className="text-sm text-gray-600">{collaborators}</p>
           </div>
         </div>

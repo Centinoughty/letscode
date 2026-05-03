@@ -32,11 +32,12 @@ export default function DashboardPage() {
         <div>
           <h2 className="font-medium text-xl">My Files</h2>
 
-          <div className="grid grid-cols-4">
-            {codes.map((item, idx) => (
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {codes.map((item) => (
               <NodeCard
-                key={idx}
-                name={item.file.name}
+                key={item.id}
+                name={item.name}
+                language={item.language}
                 type="FILE"
                 lastEdited={formatDate(item.updatedAt)}
               />
@@ -48,10 +49,10 @@ export default function DashboardPage() {
           <h2 className="font-medium text-xl">Workspaces</h2>
 
           <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {workspaces.map((item, idx) => (
+            {workspaces.map((item) => (
               <NodeCard
-                key={idx}
-                name={item.root.name}
+                key={item.id}
+                name={item.name}
                 type="WORKSPACE"
                 lastEdited={formatDate(item.updatedAt)}
               />

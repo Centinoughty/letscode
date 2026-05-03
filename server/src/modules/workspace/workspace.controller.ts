@@ -1,45 +1,47 @@
 import { Response } from "express";
-import { FileType } from "@prisma/client";
+import { NodeType } from "@prisma/client";
 import { TypedRequest } from "../../types/request";
 import { prisma } from "../../lib/prisma";
-import { CreateWorkspaceBody, GetWorkspaceParams } from "./workspace.schema";
+import * as WorkspaceSchema from "./workspace.schema";
 
 export async function createWorkspace(
-  req: TypedRequest<{}, CreateWorkspaceBody, {}>,
+  req: TypedRequest<{}, WorkspaceSchema.CreateWorkspaceBody, {}>,
   res: Response,
 ) {
   try {
     // get data from request
     const { name } = req.body;
-    const { id } = req.user!;
+    const { id: userId } = req.user!;
 
     // create a workspace
     const newWorkspace = await prisma.$transaction(async (tx) => {
-      const root = await tx.node.create({
-        data: {
-          name,
-          type: FileType.DIRECTORY,
-          path: `/`,
-          contentKey: crypto.randomUUID(),
-        },
-      });
-
+      // Create workspace first
       const workspace = await tx.workspace.create({
         data: {
-          ownerId: id,
-          rootId: root.id,
-        },
-        include: {
-          root: true,
+          name: name,
+          ownerId: userId,
         },
       });
 
-      return workspace;
+      // Create root node linked to workspace
+      const rootNode = await tx.node.create({
+        data: {
+          name: "workspace",
+          type: NodeType.DIRECTORY,
+          parentId: null,
+          workspaceId: workspace.id,
+        },
+      });
+
+      return { workspace, rootNode };
     });
 
     return res.status(201).json({
       message: "Workspace created successfully",
-      workspace: newWorkspace,
+      workspace: {
+        ...newWorkspace.workspace,
+        nodes: [newWorkspace.rootNode],
+      },
     });
   } catch (error) {
     console.log("CREATE_WORKSPACE_ERROR", error);
@@ -58,7 +60,7 @@ export async function getWorkspaces(req: TypedRequest, res: Response) {
         ownerId: id,
       },
       include: {
-        root: true,
+        nodes: true,
       },
     });
 
@@ -70,21 +72,28 @@ export async function getWorkspaces(req: TypedRequest, res: Response) {
 }
 
 export async function getWorkspace(
-  req: TypedRequest<GetWorkspaceParams, {}, {}>,
+  req: TypedRequest<WorkspaceSchema.GetWorkspaceParams, {}, {}>,
   res: Response,
 ) {
   try {
     // get data from request
     const { workspaceId } = req.params;
-    const { id } = req.user!;
+    const { id: userId } = req.user!;
 
     // fetch workspace owned by user
     const workspace = await prisma.workspace.findUnique({
       where: {
         id: workspaceId,
-        ownerId: id,
+      },
+      include: {
+        nodes: true,
       },
     });
+
+    // verify ownership
+    if (!workspace || workspace.ownerId !== userId) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
 
     return res
       .status(200)

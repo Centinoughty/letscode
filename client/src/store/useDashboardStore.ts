@@ -3,22 +3,15 @@ import { create } from "zustand";
 
 interface Code {
   id: string;
-  file: {
-    id: string;
-    name: string;
-    ext: string | null;
-  };
-
+  name: string;
+  language: string;
   createdAt: string;
   updatedAt: string;
 }
 
 interface Workspace {
   id: string;
-  root: {
-    id: string;
-    name: string;
-  };
+  name: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,7 +25,7 @@ interface DashboardState {
   fetchCodes: () => Promise<void>;
   fetchWorkspaces: () => Promise<void>;
 
-  createCode: (name: string) => Promise<void>;
+  createCode: (name: string, language: string) => Promise<void>;
   createWorkspace: (name: string) => Promise<void>;
 }
 
@@ -48,6 +41,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     try {
       const { data: codeRes, status } = await api.get("/code");
 
+      console.log(codeRes);
       if (status === 200) {
         set({
           codes: codeRes.codes,
@@ -77,13 +71,19 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     }
   },
 
-  createCode: async (name: string) => {
+  createCode: async (name: string, language: string) => {
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.post("/code", { name });
+      const { data, status } = await api.post("/code", { name, language });
 
       if (status === 201) {
+        const newCode = data.code;
+        set((state) => ({
+          codes: [newCode, ...state.codes],
+          isLoading: false,
+          error: null,
+        }));
       }
     } catch (error) {
       set({ error: "error", isLoading: false });

@@ -19,7 +19,7 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
 
-    await createCode(name);
+    await createCode(name, language);
 
     setName("");
     setLanguage("");
@@ -27,11 +27,10 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
   }
 
   const languageOptions = [
-    { label: "C++", value: "cpp" },
-    { label: "CSS", value: "css" },
-    { label: "JavaScript", value: "js" },
-    { label: "Python", value: "py" },
-    { label: "TypeScript", value: "ts" },
+    { label: "C++", value: "CPP" },
+    { label: "JavaScript", value: "JAVASCRIPT" },
+    { label: "Python", value: "PYTHON" },
+    { label: "TypeScript", value: "TYPESCRIPT" },
   ];
 
   return (
