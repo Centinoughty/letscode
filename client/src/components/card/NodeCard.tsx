@@ -153,14 +153,15 @@ export default function NodeCard({
           </div>
         </div>
 
-        {language && (
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span className="w-2 h-2 rounded-full bg-yellow-400" />
-            {language.toUpperCase()}
-          </div>
-        )}
-
-        <p className="text-sm font-medium truncate">{displayName}</p>
+        <div className="flex justify-between">
+          <p className="text-sm font-medium truncate">{displayName}</p>
+          {language && (
+            <div className="mr-1 flex items-center gap-2 text-xs text-gray-600">
+              <span className="w-2 h-2 rounded-full bg-yellow-400" />
+              {language.toUpperCase()}
+            </div>
+          )}
+        </div>
 
         <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-gray-500">
           <div>
@@ -203,7 +204,7 @@ export default function NodeCard({
             <Button
               type="submit"
               label="Save Changes"
-              disabled={!nextName.trim()}
+              disabled={!nextName.trim() || nextName.trim() === displayName}
               className="px-4 py-2 flex-1 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>

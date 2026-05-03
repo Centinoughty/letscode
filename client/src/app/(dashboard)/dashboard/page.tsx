@@ -10,8 +10,9 @@ import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { codes, fetchCodes, deleteCode } = useCodeStore();
-  const { workspaces, fetchWorkspaces, deleteWorkspace } = useWorkspaceStore();
+  const { codes, fetchCodes, editCode, deleteCode } = useCodeStore();
+  const { workspaces, fetchWorkspaces, editWorkspace, deleteWorkspace } =
+    useWorkspaceStore();
 
   useEffect(() => {
     fetchCodes();
@@ -41,6 +42,7 @@ export default function DashboardPage() {
                 language={item.language}
                 type="FILE"
                 lastEdited={formatDate(item.updatedAt)}
+                onEdit={(newName) => editCode(item.id, newName)}
                 onDelete={() => deleteCode(item.id)}
               />
             ))}
@@ -57,6 +59,7 @@ export default function DashboardPage() {
                 name={item.name}
                 type="WORKSPACE"
                 lastEdited={formatDate(item.updatedAt)}
+                onEdit={(newName) => editWorkspace(item.id, newName)}
                 onDelete={() => deleteWorkspace(item.id)}
               />
             ))}

@@ -22,6 +22,14 @@ router.get(
   CodeController.getCode,
 );
 
+router.patch(
+  "/:codeId",
+  requireAuth,
+  validate(CodeSchema.CodeParams, "params"),
+  validate(CodeSchema.EditCodeBody),
+  CodeController.editCode,
+);
+
 router.delete(
   "/:codeId",
   requireAuth,

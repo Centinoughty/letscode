@@ -15,6 +15,7 @@ interface WorkspaceState {
 
   fetchWorkspaces: () => Promise<void>;
   createWorkspace: (name: string) => Promise<void>;
+  editWorkspace: (workspaceId: string, name: string) => Promise<void>;
   deleteWorkspace: (workspaceId: string) => Promise<void>;
 }
 
@@ -52,6 +53,31 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
 
         set((state) => ({
           workspaces: [newWorkspace, ...state.workspaces],
+          isLoading: false,
+          error: null,
+        }));
+      }
+    } catch (error) {
+      set({ error: "error", isLoading: false });
+    }
+  },
+
+  editWorkspace: async (workspaceId: string, name: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data: updatedWorkspace, status } = await api.patch(
+        `/workspace/${workspaceId}`,
+        { name },
+      );
+
+      if (status === 200) {
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace.id === workspaceId
+              ? { ...workspace, ...updatedWorkspace.workspace }
+              : workspace,
+          ),
           isLoading: false,
           error: null,
         }));

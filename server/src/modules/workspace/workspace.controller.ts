@@ -104,6 +104,45 @@ export async function getWorkspace(
   }
 }
 
+export async function editWorkspace(
+  req: TypedRequest<
+    WorkspaceSchema.WorkspaceParams,
+    WorkspaceSchema.EditWorkspaceBody,
+    {}
+  >,
+  res: Response,
+) {
+  try {
+    // get data from request
+    const { workspaceId } = req.params;
+    const { name } = req.body;
+    const { id: userId } = req.user!;
+
+    // verify ownership
+    const existing = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+
+    if (!existing || existing.ownerId !== userId) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    // update workspace name
+    const updatedWorkspace = await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { name },
+    });
+
+    return res.status(200).json({
+      message: "Workspace updated successfully",
+      workspace: updatedWorkspace,
+    });
+  } catch (error) {
+    console.log("EDIT_WORKSPACE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export async function deleteWorkspace(
   req: TypedRequest<WorkspaceSchema.WorkspaceParams, {}, {}>,
   res: Response,

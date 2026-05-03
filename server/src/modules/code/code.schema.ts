@@ -12,5 +12,10 @@ export const CodeParams = z.object({
   codeId: z.uuidv4(),
 });
 
+export const EditCodeBody = z.object({
+  name: z.string(),
+});
+
 export type CreateCodeBody = z.infer<typeof CreateCodeBody>;
 export type CodeParams = z.infer<typeof CodeParams>;
+export type EditCodeBody = z.infer<typeof EditCodeBody>;

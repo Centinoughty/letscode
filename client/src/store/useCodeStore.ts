@@ -16,6 +16,7 @@ interface CodeState {
 
   fetchCodes: () => Promise<void>;
   createCode: (name: string, language: string) => Promise<void>;
+  editCode: (codeId: string, name: string) => Promise<void>;
   deleteCode: (codeId: string) => Promise<void>;
 }
 
@@ -52,6 +53,28 @@ export const useCodeStore = create<CodeState>((set) => ({
         const newCode = data.code;
         set((state) => ({
           codes: [newCode, ...state.codes],
+          isLoading: false,
+          error: null,
+        }));
+      }
+    } catch (error) {
+      set({ error: "error", isLoading: false });
+    }
+  },
+
+  editCode: async (codeId: string, name: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data: updatedCode, status } = await api.patch(`/code/${codeId}`, {
+        name,
+      });
+
+      if (status === 200) {
+        set((state) => ({
+          codes: state.codes.map((code) =>
+            code.id === codeId ? { ...code, ...updatedCode.code } : code,
+          ),
           isLoading: false,
           error: null,
         }));

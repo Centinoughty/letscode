@@ -22,6 +22,14 @@ router.get(
   WorkspaceController.getWorkspace,
 );
 
+router.patch(
+  "/:workspaceId",
+  requireAuth,
+  validate(WorkspaceSchema.WorkspaceParams, "params"),
+  validate(WorkspaceSchema.EditWorkspaceBody),
+  WorkspaceController.editWorkspace,
+);
+
 router.delete(
   "/:workspaceId",
   requireAuth,
