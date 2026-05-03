@@ -1,9 +1,9 @@
 import { SyntheticEvent, useState } from "react";
+import { useCodeStore } from "@/store/useCodeStore";
 import Button from "../ui/Button";
 import Dropdown from "../ui/Dropdown";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
-import { useDashboardStore } from "@/store/useDashboardStore";
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
 
-  const { createCode } = useDashboardStore();
+  const { createCode } = useCodeStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();

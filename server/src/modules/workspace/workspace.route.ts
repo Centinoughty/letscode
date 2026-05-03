@@ -22,4 +22,11 @@ router.get(
   WorkspaceController.getWorkspace,
 );
 
+router.delete(
+  "/:workspaceId",
+  requireAuth,
+  validate(WorkspaceSchema.WorkspaceParams, "params"),
+  WorkspaceController.deleteWorkspace,
+);
+
 export default router;

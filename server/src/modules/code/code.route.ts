@@ -18,14 +18,14 @@ router.get("/", requireAuth, CodeController.getCodes);
 router.get(
   "/:codeId",
   requireAuth,
-  validate(CodeSchema.CodeParams),
+  validate(CodeSchema.CodeParams, "params"),
   CodeController.getCode,
 );
 
 router.delete(
   "/:codeId",
   requireAuth,
-  validate(CodeSchema.CodeParams),
+  validate(CodeSchema.CodeParams, "params"),
   CodeController.deleteCode,
 );
 

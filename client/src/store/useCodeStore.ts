@@ -9,29 +9,18 @@ interface Code {
   updatedAt: string;
 }
 
-interface Workspace {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface DashboardState {
+interface CodeState {
   codes: Code[];
-  workspaces: Workspace[];
   isLoading: boolean;
   error: string | null;
 
   fetchCodes: () => Promise<void>;
-  fetchWorkspaces: () => Promise<void>;
-
   createCode: (name: string, language: string) => Promise<void>;
-  createWorkspace: (name: string) => Promise<void>;
+  deleteCode: (codeId: string) => Promise<void>;
 }
 
-export const useDashboardStore = create<DashboardState>((set) => ({
+export const useCodeStore = create<CodeState>((set) => ({
   codes: [],
-  workspaces: [],
   isLoading: false,
   error: null,
 
@@ -45,24 +34,6 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       if (status === 200) {
         set({
           codes: codeRes.codes,
-          isLoading: false,
-        });
-      }
-    } catch (error) {
-      set({ error: "error", isLoading: false });
-    }
-  },
-
-  fetchWorkspaces: async () => {
-    set({ isLoading: true, error: null });
-
-    try {
-      const { data: workspaceRes, status } = await api.get("/workspace");
-
-      console.log(workspaceRes);
-      if (status === 200) {
-        set({
-          workspaces: workspaceRes.workspaces,
           isLoading: false,
         });
       }
@@ -90,16 +61,15 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     }
   },
 
-  createWorkspace: async (name: string) => {
+  deleteCode: async (codeId: string) => {
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.post("/workspace", { name });
+      const { status } = await api.delete(`/code/${codeId}`);
 
-      if (status === 201) {
-        const newWorkspace = data.workspace;
+      if (status === 200) {
         set((state) => ({
-          workspaces: [newWorkspace, ...state.workspaces],
+          codes: state.codes.filter((ws) => ws.id !== codeId),
           isLoading: false,
           error: null,
         }));

@@ -24,7 +24,7 @@ export async function createCode(
 
     return res.status(201).json({
       message: "Code created successfully",
-      data: newCode,
+      code: newCode,
     });
   } catch (error) {
     console.log("CREATE_CODE_ERROR", error);

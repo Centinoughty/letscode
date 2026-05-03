@@ -1,14 +1,17 @@
+import { LucideIcon } from "lucide-react";
 import { ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   className?: string;
+  icon?: LucideIcon;
 }
 
 export default function Button({
   label,
   className,
   type = "button",
+  icon: Icon,
   ...props
 }: ButtonProps) {
   return (
@@ -18,6 +21,7 @@ export default function Button({
         className={`p-2 bg-primary outline-none text-neutral ${className}`}
         {...props}
       >
+        {Icon && <Icon size={18} />}
         {label}
       </button>
     </>

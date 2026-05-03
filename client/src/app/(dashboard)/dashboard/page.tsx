@@ -2,15 +2,16 @@
 
 import NodeCard from "@/components/card/NodeCard";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useDashboardStore } from "@/store/useDashboardStore";
+import { useCodeStore } from "@/store/useCodeStore";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import { mont } from "@/styles/font";
 import { formatDate } from "@/util/formatDate";
 import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { codes, workspaces, fetchCodes, fetchWorkspaces } =
-    useDashboardStore();
+  const { codes, fetchCodes, deleteCode } = useCodeStore();
+  const { workspaces, fetchWorkspaces, deleteWorkspace } = useWorkspaceStore();
 
   useEffect(() => {
     fetchCodes();
@@ -40,6 +41,7 @@ export default function DashboardPage() {
                 language={item.language}
                 type="FILE"
                 lastEdited={formatDate(item.updatedAt)}
+                onDelete={() => deleteCode(item.id)}
               />
             ))}
           </div>
@@ -55,6 +57,7 @@ export default function DashboardPage() {
                 name={item.name}
                 type="WORKSPACE"
                 lastEdited={formatDate(item.updatedAt)}
+                onDelete={() => deleteWorkspace(item.id)}
               />
             ))}
           </div>

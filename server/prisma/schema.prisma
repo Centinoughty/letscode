@@ -86,11 +86,11 @@ model Node {
 
   // tree structure
   parentId String?
-  parent   Node?   @relation("Tree", fields: [parentId], references: [id])
+  parent   Node?   @relation("Tree", fields: [parentId], references: [id], onDelete: Cascade)
   children Node[]  @relation("Tree")
 
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

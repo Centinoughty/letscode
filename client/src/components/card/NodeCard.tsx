@@ -1,7 +1,11 @@
 "use client";
 
-import { Code2, Folder, MoreVertical } from "lucide-react";
+import { Code2, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import clsx from "clsx";
+import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import Input from "../ui/Input";
+import Modal from "../ui/Modal";
+import Button from "../ui/Button";
 
 interface NodeCardProps {
   type: "FILE" | "WORKSPACE";
@@ -10,6 +14,9 @@ interface NodeCardProps {
   lastEdited?: string;
   collaborators?: number;
   isOwned?: boolean;
+
+  onEdit?: (name: string) => void | Promise<void>;
+  onDelete?: () => void | Promise<void>;
 }
 
 export default function NodeCard({
@@ -19,10 +26,71 @@ export default function NodeCard({
   lastEdited,
   collaborators = 1,
   isOwned = true,
+  onEdit,
+  onDelete,
 }: NodeCardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
+  const [nextName, setNextName] = useState<string>(name);
+  const [displayName, setDisplayName] = useState<string>(name);
+  const [isDeleted, setIsDeleted] = useState<boolean>(false);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setDisplayName(name);
+    setNextName(name);
+  }, [name, isEditOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const entityLabel = type === "FILE" ? "File" : "Workspace";
+
+  async function handleEditSubmit(event: SyntheticEvent) {
+    event.preventDefault();
+
+    const trimmedName = nextName.trim();
+    if (!trimmedName) return;
+
+    setDisplayName(trimmedName);
+    await onEdit?.(trimmedName);
+    setIsEditOpen(false);
+    setIsMenuOpen(false);
+  }
+
+  async function handleDeleteConfirm() {
+    await onDelete?.();
+    setIsDeleted(true);
+    setIsDeleteOpen(false);
+    setIsMenuOpen(false);
+  }
+
+  if (isDeleted) return null;
+
   return (
     <>
-      <div className="flex flex-col gap-3 border border-gray-200 rounded-xl bg-white p-3 cursor-pointer">
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 cursor-pointer">
         <div className="flex items-start justify-between">
           <div className="p-2 rounded-lg bg-gray-100">
             {type === "FILE" ? (
@@ -32,7 +100,7 @@ export default function NodeCard({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="relative flex items-center gap-2" ref={menuRef}>
             <span
               className={clsx(
                 "text-xs px-2 py-1 rounded-full font-medium",
@@ -44,9 +112,44 @@ export default function NodeCard({
               {isOwned ? "OWNED BY YOU" : "SHARED"}
             </span>
 
-            <button className="p-1 rounded-full hover:bg-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((current) => !current)}
+              className="relative rounded-full p-1 hover:bg-gray-100 outline-none"
+              aria-label={`${entityLabel} actions`}
+              aria-haspopup="menu"
+              aria-expanded={isMenuOpen}
+            >
               <MoreVertical size={16} />
             </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsEditOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+                >
+                  <Pencil size={16} />
+                  Edit Name
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsDeleteOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 border-t border-gray-100 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -57,7 +160,7 @@ export default function NodeCard({
           </div>
         )}
 
-        <p className="text-sm font-medium truncate">{name}</p>
+        <p className="text-sm font-medium truncate">{displayName}</p>
 
         <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-gray-500">
           <div>
@@ -73,6 +176,74 @@ export default function NodeCard({
           </div>
         </div>
       </div>
+
+      {/* edit name form */}
+      <Modal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title={`Edit ${entityLabel}`}
+      >
+        <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
+          <Input
+            type="text"
+            label={`${entityLabel} name`}
+            value={nextName}
+            onChange={(event) => setNextName(event.target.value)}
+            autoFocus
+          />
+
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              label="Cancel"
+              onClick={() => setIsEditOpen(false)}
+              className="px-4 py-2 flex-1 border border-gray-200 text-sm font-medium bg-neutral! text-black!"
+            />
+
+            <Button
+              type="submit"
+              label="Save Changes"
+              disabled={!nextName.trim()}
+              className="px-4 py-2 flex-1 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          </div>
+        </form>
+      </Modal>
+
+      {/* delete confirmation modal */}
+      <Modal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        title={`Delete ${entityLabel}`}
+      >
+        <div className="flex flex-col gap-5">
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">
+              This will permanently delete{" "}
+              <span className="font-medium text-gray-900">{displayName}</span>.
+            </p>
+            <p className="text-sm text-gray-600">
+              This action cannot be undone.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              label="Cancel"
+              onClick={() => setIsDeleteOpen(false)}
+              className="px-4 py-2 flex-1 border border-gray-200 text-sm font-medium bg-neutral! text-black!"
+            />
+
+            <Button
+              type="button"
+              label="Delete"
+              onClick={handleDeleteConfirm}
+              className="px-4 py-2 flex-1 text-sm font-medium bg-red-600 text-white transition hover:bg-red-700"
+            />
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

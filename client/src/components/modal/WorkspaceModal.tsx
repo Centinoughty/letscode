@@ -1,8 +1,8 @@
 import { SyntheticEvent, useState } from "react";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
-import { useDashboardStore } from "@/store/useDashboardStore";
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ModalProps {
 export default function WorkspaceModal({ isOpen, onClose }: ModalProps) {
   const [name, setName] = useState<string>("");
 
-  const { createWorkspace } = useDashboardStore();
+  const { createWorkspace } = useWorkspaceStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
