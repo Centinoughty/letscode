@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -67,6 +68,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -85,6 +87,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -103,6 +106,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },

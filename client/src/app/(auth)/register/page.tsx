@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState<string>("");
   const [confirmPass, setConfirmPass] = useState<string>("");
 
-  const { register, isLoading, error } = useAuthStore();
+  const { register } = useAuthStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();

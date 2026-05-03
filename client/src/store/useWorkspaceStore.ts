@@ -38,6 +38,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -58,6 +59,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -83,6 +85,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -101,6 +104,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },

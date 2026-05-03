@@ -39,6 +39,7 @@ export const useCodeStore = create<CodeState>((set) => ({
         });
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -58,6 +59,7 @@ export const useCodeStore = create<CodeState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -80,6 +82,7 @@ export const useCodeStore = create<CodeState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },
@@ -98,6 +101,7 @@ export const useCodeStore = create<CodeState>((set) => ({
         }));
       }
     } catch (error) {
+      console.log(error);
       set({ error: "error", isLoading: false });
     }
   },

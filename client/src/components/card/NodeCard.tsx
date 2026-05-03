@@ -38,10 +38,11 @@ export default function NodeCard({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const handleEditOpen = () => {
     setDisplayName(name);
     setNextName(name);
-  }, [name, isEditOpen]);
+    setIsEditOpen(true);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -127,10 +128,7 @@ export default function NodeCard({
               <div className="absolute right-0 top-full z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setIsEditOpen(true);
-                  }}
+                  onClick={handleEditOpen}
                   className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-50"
                 >
                   <Pencil size={16} />

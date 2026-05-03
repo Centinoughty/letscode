@@ -27,7 +27,7 @@ export default function DashboardPage() {
             Welcome back, {user?.name?.split(" ")[0] ?? "User"}.
           </h1>
           <p className="  text-gray-400">
-            Here's an overview of your recent activity and projects.
+            Here&apos;s an overview of your recent activity and projects.
           </p>
         </div>
 

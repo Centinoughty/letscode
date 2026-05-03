@@ -4,14 +4,22 @@ import { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { usePathname } from "next/navigation";
-import { Grid2X2, Folder, Code2, Users, LogOut, Plus } from "lucide-react";
+import {
+  Grid2X2,
+  Folder,
+  Code2,
+  Users,
+  LogOut,
+  Plus,
+  LucideIcon,
+} from "lucide-react";
 import { mont } from "@/styles/font";
 import WorkspaceModal from "../modal/WorkspaceModal";
 
 interface SidebarItem {
   name: string;
   url: string;
-  icon: any;
+  icon: LucideIcon;
 }
 
 const sidebarItems: SidebarItem[] = [

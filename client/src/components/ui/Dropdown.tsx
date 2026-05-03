@@ -25,7 +25,6 @@ export default function Dropdown({
   className = "",
   onChange,
   value,
-  ...props
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string>(

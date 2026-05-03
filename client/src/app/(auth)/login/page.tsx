@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const { login, isLoading, error } = useAuthStore();
+  const { login } = useAuthStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
@@ -91,7 +91,7 @@ export default function LoginPage() {
           </button>
 
           <div className="flex gap-2 text-sm">
-            <p>Don't have an account?</p>
+            <p>Don&apos;t have an account?</p>
             <Link href={"/register"} className="text-primary">
               create account
             </Link>
