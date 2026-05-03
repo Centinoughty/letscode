@@ -72,7 +72,7 @@ export async function getWorkspaces(req: TypedRequest, res: Response) {
 }
 
 export async function getWorkspace(
-  req: TypedRequest<WorkspaceSchema.GetWorkspaceParams, {}, {}>,
+  req: TypedRequest<WorkspaceSchema.WorkspaceParams, {}, {}>,
   res: Response,
 ) {
   try {
@@ -100,6 +100,40 @@ export async function getWorkspace(
       .json({ message: "Fetched workspace data", workspace });
   } catch (error) {
     console.log("GET_WORKSPACE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function deleteWorkspace(
+  req: TypedRequest<WorkspaceSchema.WorkspaceParams, {}, {}>,
+  res: Response,
+) {
+  try {
+    // get data from request
+    const { workspaceId } = req.params;
+    const { id: userId } = req.user!;
+
+    // delete workspace
+    const workspace = await prisma.workspace.delete({
+      where: {
+        id: workspaceId,
+        ownerId: userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // verify ownership
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Workspace deleted successfully", workspace });
+  } catch (error) {
+    console.log("DELETE_WORKSPACE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

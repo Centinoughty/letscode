@@ -8,9 +8,9 @@ export const CreateCodeBody = z.object({
     .transform((val) => val as Language),
 });
 
-export const GetCodeParams = z.object({
+export const CodeParams = z.object({
   codeId: z.uuidv4(),
 });
 
 export type CreateCodeBody = z.infer<typeof CreateCodeBody>;
-export type GetCodeParams = z.infer<typeof GetCodeParams>;
+export type CodeParams = z.infer<typeof CodeParams>;

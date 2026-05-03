@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { TypedRequest } from "../../types/request";
-import * as CodeSchema from "./code.shema";
+import * as CodeSchema from "./code.schema";
 import { prisma } from "../../lib/prisma";
 
 export async function createCode(
@@ -52,7 +52,7 @@ export async function getCodes(req: TypedRequest, res: Response) {
 }
 
 export async function getCode(
-  req: TypedRequest<CodeSchema.GetCodeParams, {}, {}>,
+  req: TypedRequest<CodeSchema.CodeParams, {}, {}>,
   res: Response,
 ) {
   try {
@@ -75,6 +75,38 @@ export async function getCode(
     return res.status(200).json({ message: "Fetched code successfully", code });
   } catch (error) {
     console.log("GET_CODE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function deleteCode(
+  req: TypedRequest<CodeSchema.CodeParams, {}, {}>,
+  res: Response,
+) {
+  try {
+    // get data from request
+    const { codeId } = req.params;
+    const { id: userId } = req.user!;
+
+    // delete code
+    const code = await prisma.code.delete({
+      where: {
+        id: codeId,
+        ownerId: userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // verify ownership
+    if (!code) {
+      return res.status(404).json({ message: "Code not found" });
+    }
+
+    return res.status(200).json({ message: "Code deleted successfully", code });
+  } catch (error) {
+    console.log("DELETE_CODE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

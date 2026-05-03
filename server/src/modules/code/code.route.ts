@@ -1,20 +1,32 @@
 import { Router } from "express";
-import { validate } from "../../middlewares/validate";
-import * as CodeSchema from "./code.shema";
-import { createCode, getCode, getCodes } from "./code.controller";
 import { requireAuth } from "../../middlewares/requireAuth";
+import { validate } from "../../middlewares/validate";
+import * as CodeSchema from "./code.schema";
+import * as CodeController from "./code.controller";
 
 const router = Router();
 
-router.post("/", requireAuth, validate(CodeSchema.CreateCodeBody), createCode);
+router.post(
+  "/",
+  requireAuth,
+  validate(CodeSchema.CreateCodeBody),
+  CodeController.createCode,
+);
 
-router.get("/", requireAuth, getCodes);
+router.get("/", requireAuth, CodeController.getCodes);
 
 router.get(
   "/:codeId",
   requireAuth,
-  validate(CodeSchema.GetCodeParams),
-  getCode,
+  validate(CodeSchema.CodeParams),
+  CodeController.getCode,
+);
+
+router.delete(
+  "/:codeId",
+  requireAuth,
+  validate(CodeSchema.CodeParams),
+  CodeController.deleteCode,
 );
 
 export default router;

@@ -18,7 +18,7 @@ router.get("/", requireAuth, WorkspaceController.getWorkspaces);
 router.get(
   "/:workspaceId",
   requireAuth,
-  validate(WorkspaceSchema.GetWorkspaceParams, "params"),
+  validate(WorkspaceSchema.WorkspaceParams, "params"),
   WorkspaceController.getWorkspace,
 );
 
