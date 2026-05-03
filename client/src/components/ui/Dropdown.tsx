@@ -68,49 +68,51 @@ export default function Dropdown({
   };
 
   return (
-    <div
-      ref={dropdownRef}
-      className={`relative flex flex-col ${poppins.className} ${className}`}
-    >
-      {label && (
-        <label
-          onClick={() => isOpen && setIsOpen(false)}
-          className="text-sm font-medium"
-        >
-          {label}
-        </label>
-      )}
-
+    <>
       <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-2 flex items-center justify-between border border-black/20 duration-100 cursor-pointer hover:border-black/30 bg-white"
+        ref={dropdownRef}
+        className={`relative flex flex-col ${poppins.className} ${className}`}
       >
-        <span className="tracking-wide">
-          {selectedOption?.label || "Select..."}
-        </span>
+        {label && (
+          <label
+            onClick={() => isOpen && setIsOpen(false)}
+            className="text-sm font-medium"
+          >
+            {label}
+          </label>
+        )}
 
-        <span className={`duration-150 ${isOpen ? "-rotate-180" : ""}`}>
-          <ChevronUp size={20} />
-        </span>
-      </div>
+        <div
+          onClick={() => setIsOpen(!isOpen)}
+          className="px-3 py-2 flex items-center justify-between border border-black/20 duration-100 cursor-pointer hover:border-black/30 bg-white"
+        >
+          <span className="tracking-wide">
+            {selectedOption?.label || "Select..."}
+          </span>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 w-full mt-1 border border-black/20 bg-white z-50 shadow-lg max-h-60 overflow-y-auto">
-          {options.map((option, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleSelect(option.value)}
-              className={`px-3 py-2 cursor-pointer ${
-                option.value === selectedValue
-                  ? "bg-primary text-white"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              {option.label}
-            </div>
-          ))}
+          <span className={`duration-150 ${isOpen ? "-rotate-180" : ""}`}>
+            <ChevronUp size={20} />
+          </span>
         </div>
-      )}
-    </div>
+
+        {isOpen && (
+          <div className="absolute top-full left-0 w-full mt-1 border border-black/20 bg-white z-50 shadow-lg max-h-60 overflow-y-auto">
+            {options.map((option, idx) => (
+              <div
+                key={idx}
+                onClick={() => handleSelect(option.value)}
+                className={`px-3 py-2 cursor-pointer ${
+                  option.value === selectedValue
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {option.label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

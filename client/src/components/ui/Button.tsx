@@ -12,12 +12,14 @@ export default function Button({
   ...props
 }: ButtonProps) {
   return (
-    <button
-      type={type}
-      className={`p-2 bg-primary outline-none text-neutral ${className}`}
-      {...props}
-    >
-      {label}
-    </button>
+    <>
+      <button
+        type={type}
+        className={`p-2 bg-primary outline-none text-neutral ${className}`}
+        {...props}
+      >
+        {label}
+      </button>
+    </>
   );
 }
