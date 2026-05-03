@@ -58,7 +58,7 @@ export default function Modal({
               className="rounded-full p-1 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900"
               aria-label="Close modal"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
 

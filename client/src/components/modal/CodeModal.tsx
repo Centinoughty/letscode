@@ -1,5 +1,6 @@
 import { SyntheticEvent, useState } from "react";
 import Button from "../ui/Button";
+import Dropdown from "../ui/Dropdown";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -11,6 +12,7 @@ interface ModalProps {
 
 export default function CodeModal({ isOpen, onClose }: ModalProps) {
   const [name, setName] = useState<string>("");
+  const [language, setLanguage] = useState<string>("");
 
   const { createCode } = useDashboardStore();
 
@@ -20,8 +22,17 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
     await createCode(name);
 
     setName("");
+    setLanguage("");
     onClose();
   }
+
+  const languageOptions = [
+    { label: "C++", value: "cpp" },
+    { label: "CSS", value: "css" },
+    { label: "JavaScript", value: "js" },
+    { label: "Python", value: "py" },
+    { label: "TypeScript", value: "ts" },
+  ];
 
   return (
     <>
@@ -33,7 +44,15 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
             placeholder="e.g. index"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
             autoFocus
+          />
+
+          <Dropdown
+            label="Language"
+            value={language}
+            onChange={(event) => setLanguage(event)}
+            options={languageOptions}
           />
 
           <Button type="submit" label="Create" disabled={!name.trim()} />

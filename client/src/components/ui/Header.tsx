@@ -1,12 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Bell, Search, Settings } from "lucide-react";
 import Input from "./Input";
 import Image from "next/image";
 import Button from "./Button";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useState } from "react";
-import Modal from "./Modal";
 import CodeModal from "../modal/CodeModal";
 import WorkspaceModal from "../modal/WorkspaceModal";
 
