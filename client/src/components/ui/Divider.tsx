@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-export default function Divider() {
+export default function Divider({ text = "or" }: { text?: string }) {
   return (
     <>
       <div className={clsx("w-full", "flex items-center")}>
@@ -13,7 +13,7 @@ export default function Divider() {
             "text-sm font-semibold text-gray-400 uppercase",
           )}
         >
-          or
+          {text}
         </span>
         <div className={clsx("", "h-px grow", "bg-gray-200")}></div>
       </div>

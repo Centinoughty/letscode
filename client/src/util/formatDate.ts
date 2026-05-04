@@ -9,3 +9,13 @@ export function formatDate(date: string): string {
 
   return `${days} days ago`;
 }
+
+export function getAccountAge(date: string) {
+  const created = new Date(date);
+  const now = new Date();
+
+  const diffInMs = now.getTime() - created.getTime();
+  const years = diffInMs / (1000 * 60 * 60 * 24 * 365);
+
+  return `${years.toFixed(1)} Years`;
+}

@@ -5,6 +5,10 @@ interface User {
   name?: string;
   email: string;
   avatar?: string;
+  is_google: boolean;
+  is_verified: boolean;
+  is_admin: boolean;
+  createdAt: string;
 }
 
 interface AuthState {
@@ -18,6 +22,7 @@ interface AuthState {
   loginWithGoogle: (code: string) => Promise<void>;
 
   getUser: () => Promise<void>;
+  editProfile: (name: string) => Promise<void>;
 
   logout: () => void;
 }
@@ -101,7 +106,24 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (status === 200) {
         set({
           user: data.user,
-          isAuthenticated: true,
+          error: null,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  editProfile: async (name: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data, status } = await api.patch("/me");
+
+      if (status === 200) {
+        set({
+          user: data.user,
           error: null,
         });
       }
