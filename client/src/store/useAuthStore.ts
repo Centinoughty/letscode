@@ -42,11 +42,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         password,
       });
 
+      set({ isLoading: false });
+
       if (status == 200) {
         set({
           user: data.user,
           isAuthenticated: true,
-          isLoading: false,
         });
       }
     } catch (error) {
@@ -64,6 +65,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         email,
         password,
       });
+
+      set({ isLoading: false });
 
       if (status == 201) {
         set({
@@ -84,6 +87,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const { data, status } = await api.post("/auth/google", { code });
 
+      set({ isLoading: false });
+
       if (status === 200) {
         set({
           user: data.user,
@@ -103,6 +108,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const { data, status } = await api.get("/user/me");
 
+      set({ isLoading: false });
+
       if (status === 200) {
         set({
           user: data.user,
@@ -120,6 +127,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       const { data, status } = await api.patch("/user/me");
+
+      set({ isLoading: false });
 
       if (status === 200) {
         set({
