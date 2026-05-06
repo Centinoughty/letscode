@@ -6,8 +6,10 @@ import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
+import Link from "next/link";
 
 interface NodeCardProps {
+  id: string;
   type: "FILE" | "WORKSPACE";
   name: string;
   language?: string;
@@ -20,6 +22,7 @@ interface NodeCardProps {
 }
 
 export default function NodeCard({
+  id,
   type,
   name,
   language,
@@ -152,7 +155,10 @@ export default function NodeCard({
         </div>
 
         <div className="flex justify-between">
-          <p className="text-sm font-medium truncate">{displayName}</p>
+          <Link href={`/code/${id}`} className="text-sm font-medium truncate">
+            {displayName}
+          </Link>
+
           {language && (
             <div className="mr-1 flex items-center gap-2 text-xs text-gray-600">
               <span className="w-2 h-2 rounded-full bg-yellow-400" />
@@ -164,6 +170,7 @@ export default function NodeCard({
         <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-gray-500">
           <div>
             <p className="uppercase text-xs">Last edited</p>
+
             <p className="text-sm text-gray-600">{lastEdited || "-"}</p>
           </div>
 
@@ -171,6 +178,7 @@ export default function NodeCard({
             <p className="uppercase text-xs">
               {type === "FILE" ? "Team size" : "Members"}
             </p>
+
             <p className="text-sm text-gray-600">{collaborators}</p>
           </div>
         </div>
@@ -221,6 +229,7 @@ export default function NodeCard({
               This will permanently delete{" "}
               <span className="font-medium text-gray-900">{displayName}</span>.
             </p>
+
             <p className="text-sm text-gray-600">
               This action cannot be undone.
             </p>
