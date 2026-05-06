@@ -66,8 +66,10 @@ export default function LoginPage() {
               placeholder="temp@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoFocus
               required
             />
+
             <Input
               type="password"
               label="Password"
@@ -76,6 +78,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+
             <Button type="submit" label="Sign in" />
           </form>
 
