@@ -8,10 +8,13 @@ import Button from "./Button";
 import { useAuthStore } from "@/store/useAuthStore";
 import CodeModal from "../modal/CodeModal";
 import WorkspaceModal from "../modal/WorkspaceModal";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Header() {
-  const { user } = useAuthStore();
+  const router = useRouter();
+
+  const { user, logout } = useAuthStore();
 
   const [isCodeOpen, setIsCodeOpen] = useState<boolean>(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState<boolean>(false);
@@ -40,6 +43,12 @@ export default function Header() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
+
+  const handleSignout = async () => {
+    await logout();
+    setIsMenuOpen(false);
+    router.push("/login");
+  };
 
   return (
     <>
@@ -77,10 +86,10 @@ export default function Header() {
             <Image
               src={user?.avatar || "https://i.pravatar.cc/100"}
               alt={user?.name || "pravatar"}
-              width={35}
-              height={35}
+              width={33}
+              height={33}
               onClick={() => setIsMenuOpen((current) => !current)}
-              className="rounded-full cursor-pointer"
+              className="rounded-full cursor-pointer hover:ring-8 hover:ring-gray-200 duration-150"
             />
 
             {isMenuOpen && (
@@ -95,9 +104,7 @@ export default function Header() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                  }}
+                  onClick={handleSignout}
                   className="flex w-full items-center gap-2 border-t border-gray-100 px-4 py-3 text-left text-sm text-red-600 transition hover:bg-red-50"
                 >
                   Signout

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Grid2X2,
   Folder,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { mont } from "@/styles/font";
 import WorkspaceModal from "../modal/WorkspaceModal";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface SidebarItem {
   name: string;
@@ -31,8 +32,16 @@ const sidebarItems: SidebarItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { logout } = useAuthStore();
 
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState<boolean>(false);
+
+  const handleSignout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <>
@@ -83,7 +92,10 @@ export default function Sidebar() {
         </div>
 
         <div className="space-y-2">
-          <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all">
+          <button
+            onClick={handleSignout}
+            className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+          >
             <LogOut size={18} />
             Sign Out
           </button>

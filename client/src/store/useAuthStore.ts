@@ -24,7 +24,7 @@ interface AuthState {
   getUser: () => Promise<void>;
   editProfile: (name: string) => Promise<void>;
 
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.patch("/me");
+      const { data, status } = await api.patch("/user/me");
 
       if (status === 200) {
         set({
@@ -133,7 +133,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  logout: () => {
+  logout: async () => {
     set({ user: null, isAuthenticated: false });
+
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.log(error);
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
   },
 }));

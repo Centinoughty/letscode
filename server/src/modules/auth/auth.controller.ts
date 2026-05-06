@@ -217,3 +217,18 @@ export async function googleLogin(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export async function logout(_: TypedRequest, res: Response) {
+  try {
+    // clear cookies
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    return res.status(200).json({
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    console.log("USER_LOGOUT_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
