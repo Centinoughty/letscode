@@ -16,15 +16,15 @@ export function ProtectedLayout({ children }: { children: ReactNode }) {
     checkAuth();
   }, [getUser]);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, router]);
+  // useEffect(() => {
+  //   if (!isLoading && !isAuthenticated) {
+  //     router.push("/login");
+  //   }
+  // }, [isAuthenticated, isLoading, router]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  // if (!isAuthenticated) {
+  //   return null;
+  // }
 
   return <>{children}</>;
 }

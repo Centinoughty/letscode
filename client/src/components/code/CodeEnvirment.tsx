@@ -1,54 +1,26 @@
 "use client";
 
-import Editor, { OnChange } from "@monaco-editor/react";
-import { useState } from "react";
+import MonacoEditor from "./MonacoEditor";
+import EditorHeader from "./EditorHeader";
+import OutputPanel from "./OutputPanel";
+import ChatSidebar from "./ChatSidebar";
 
-interface CodeEnvirmentProps {
-  initialValue?: string;
-  language?: string;
-  height?: string;
-  readOnly?: boolean;
-  onChange?: (value: string) => void;
-}
-
-export default function CodeEnvirment({
-  initialValue = "",
-  language = "javascript",
-  height = "100%",
-  readOnly = false,
-  onChange,
-}: CodeEnvirmentProps) {
-  const [value, setValue] = useState(initialValue);
-
-  const handleChange: OnChange = (nextValue) => {
-    const updatedValue = nextValue ?? "";
-
-    setValue(updatedValue);
-    onChange?.(updatedValue);
-  };
-
+export default function CodeEnvirment() {
   return (
     <>
-      <Editor
-        height={height}
-        defaultLanguage={language}
-        defaultValue={value}
-        value={value}
-        onChange={handleChange}
-        theme="vs-dark"
-        options={{
-          minimap: { enabled: false },
-          fontSize: 14,
-          lineHeight: 22,
-          smoothScrolling: true,
-          scrollBeyondLastLine: false,
-          automaticLayout: true,
-          readOnly,
-          padding: { top: 16, bottom: 16 },
-          renderWhitespace: "selection",
-          wordWrap: "off",
-        }}
-      />
+      <div className="grid h-full grid-rows-[56px_1fr_220px]">
+        <EditorHeader name="main" language="Python" />
+
+        <div className="grid overflow-hidden grid-cols-[1fr_360px]">
+          <div className="overflow-hidden border-r border-zinc-800">
+            <MonacoEditor />
+          </div>
+
+          <ChatSidebar />
+        </div>
+
+        <OutputPanel />
+      </div>
     </>
   );
 }
