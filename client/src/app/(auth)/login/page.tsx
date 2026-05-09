@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const { login } = useAuthStore();
+  const { login, error, errorFrom } = useAuthStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
@@ -56,6 +56,12 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {error && errorFrom === "login" && (
+            <div className="w-full p-3 text-sm text-center text-red-500 border border-red-300 bg-red-50">
+              {error}
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
             className="w-full flex flex-col gap-3 tracking-wider"
@@ -63,7 +69,7 @@ export default function LoginPage() {
             <Input
               type="email"
               label="Email Address"
-              placeholder="temp@example.com"
+              placeholder="temp@letscode.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoFocus

@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState<string>("");
   const [confirmPass, setConfirmPass] = useState<string>("");
 
-  const { register } = useAuthStore();
+  const { register, error, errorFrom } = useAuthStore();
 
   async function handleSubmit(event: SyntheticEvent) {
     event.preventDefault();
@@ -57,6 +57,12 @@ export default function RegisterPage() {
             </p>
           </div>
 
+          {error && errorFrom === "register" && (
+            <div className="w-full p-3 text-sm text-center text-red-500 border border-red-300 bg-red-50">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3">
             <Input
               type="text"
@@ -69,7 +75,7 @@ export default function RegisterPage() {
             <Input
               type="email"
               label="Email Address"
-              placeholder="temp@example.com"
+              placeholder="temp@letscode.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />

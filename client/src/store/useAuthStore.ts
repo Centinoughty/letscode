@@ -1,4 +1,5 @@
 import { api } from "@/api/axios";
+import axios from "axios";
 import { create } from "zustand";
 
 interface User {
@@ -15,6 +16,8 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+
+  errorFrom: string | null;
   error: string | null;
 
   login: (email: string, password: string) => Promise<void>;
@@ -32,27 +35,36 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  errorFrom: null,
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.post("/auth/login", {
+      const { data } = await api.post("/auth/login", {
         email,
         password,
       });
 
-      set({ isLoading: false });
-
-      if (status == 200) {
-        set({
-          user: data.user,
-          isAuthenticated: true,
-        });
-      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.log(error);
-      set({ error: "error", isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+        errorFrom: "login",
+      });
     }
   },
 
@@ -60,24 +72,31 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.post("auth/register", {
+      const { data } = await api.post("auth/register", {
         name,
         email,
         password,
       });
 
-      set({ isLoading: false });
-
-      if (status == 201) {
-        set({
-          user: data.user,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        errorFrom: "register",
+      });
     } catch (error) {
-      console.log(error);
-      set({ error: "error", isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+      });
     }
   },
 
@@ -85,20 +104,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.post("/auth/google", { code });
+      const { data } = await api.post("/auth/google", { code });
 
-      set({ isLoading: false });
-
-      if (status === 200) {
-        set({
-          user: data.user,
-          isAuthenticated: true,
-          error: null,
-        });
-      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.log(error);
-      set({ error: "error", isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+        errorFrom: "google",
+      });
     }
   },
 
@@ -106,19 +132,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.get("/user/me");
+      const { data } = await api.get("/user/me");
 
-      set({ isLoading: false });
-
-      if (status === 200) {
-        set({
-          user: data.user,
-          error: null,
-        });
-      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.log(error);
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+      });
     }
   },
 
@@ -126,19 +159,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data, status } = await api.patch("/user/me");
+      const { data } = await api.patch("/user/me");
 
-      set({ isLoading: false });
-
-      if (status === 200) {
-        set({
-          user: data.user,
-          error: null,
-        });
-      }
+      set({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
     } catch (error) {
-      console.log(error);
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+      });
     }
   },
 
@@ -148,8 +188,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await api.post("/auth/logout");
     } catch (error) {
-      console.log(error);
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      let message = "Something went wrong";
+
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+
+      set({
+        error: message,
+        isLoading: false,
+        isAuthenticated: false,
+      });
     }
   },
 }));
