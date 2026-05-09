@@ -12,7 +12,7 @@ export default function CodeEnvirment() {
         <EditorHeader name="main" language="Python" />
 
         <div className="grid overflow-hidden grid-cols-[1fr_360px]">
-          <div className="overflow-hidden border-r border-zinc-800">
+          <div className="p-2 overflow-hidden">
             <MonacoEditor />
           </div>
 

@@ -3,6 +3,8 @@
 import { ArrowLeft, Play } from "lucide-react";
 import Link from "next/link";
 import ProfileButton from "../common/ProfileButton";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
 
 interface HeaderProps {
   name: string;
@@ -11,26 +13,23 @@ interface HeaderProps {
 
 export default function EditorHeader({ name, language }: HeaderProps) {
   return (
-    <header className="px-4 flex items-center justify-between bg-black">
+    <header className="px-4 flex items-center justify-between border-b border-gray-200">
       <div className="flex items-center gap-4">
         <Link href="/dashboard">
-          <ArrowLeft size={18} className="text-neutral" />
+          <ArrowLeft size={18} className="" />
         </Link>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-white">{name}</span>
+        <div className="flex items-end gap-2 text-sm">
+          <Input type="text" value={name} />
 
           <span className="px-2 py-1 text-xs text-gray-200 bg-zinc-800 rounded">
-            {language}
+            {language.toLowerCase()}
           </span>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="px-4 py-2 flex items-center gap-2 text-sm font-medium text-black rounded-md bg-emerald-500 transition hover:bg-emerald-400">
-          <Play size={18} />
-          Run
-        </button>
+        <Button label="Run" icon={Play} className="rounded-md" />
 
         <ProfileButton />
       </div>
