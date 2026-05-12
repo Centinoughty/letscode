@@ -1,5 +1,5 @@
 import { Editor, OnChange } from "@monaco-editor/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CodeEnvirmentProps {
   initialValue?: string;
@@ -18,6 +18,10 @@ export default function MonacoEditor({
 }: CodeEnvirmentProps) {
   const [value, setValue] = useState(initialValue);
 
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
   const handleChange: OnChange = (nextValue) => {
     const updatedValue = nextValue ?? "";
 
@@ -29,7 +33,7 @@ export default function MonacoEditor({
     <>
       <Editor
         height={height}
-        defaultLanguage={language}
+        language={language}
         defaultValue={value}
         value={value}
         onChange={handleChange}
@@ -39,7 +43,7 @@ export default function MonacoEditor({
           fontSize: 14,
           lineHeight: 22,
           smoothScrolling: true,
-          scrollBeyondLastLine: false,
+          scrollBeyondLastLine: true,
           automaticLayout: true,
           readOnly,
           padding: { top: 16, bottom: 16 },

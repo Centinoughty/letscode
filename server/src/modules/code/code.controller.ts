@@ -1,7 +1,24 @@
+import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { Response } from "express";
+import path from "path";
 import { TypedRequest } from "../../types/request";
 import * as CodeSchema from "./code.schema";
 import { prisma } from "../../lib/prisma";
+import { languageExtensions } from "../../config/langauge";
+
+const uploadsDir = path.resolve(__dirname, "../../../uploads");
+
+function resolveCodeFilePath(code: {
+  filePath: string;
+  language: CodeSchema.CreateCodeBody["language"];
+}) {
+  const fileExtension = languageExtensions[code.language];
+  const fileBaseName = code.filePath.startsWith("/")
+    ? code.filePath.slice(1)
+    : code.filePath;
+
+  return path.join(uploadsDir, `${fileBaseName}.${fileExtension}`);
+}
 
 export async function createCode(
   req: TypedRequest<{}, CodeSchema.CreateCodeBody, {}>,
@@ -12,12 +29,22 @@ export async function createCode(
     const { name, language } = req.body;
     const { id: userId } = req.user!;
 
+    // set file properties
+    const filePath = `${Date.now()}-${crypto.randomUUID()}`;
+    const fileExtension = languageExtensions[language];
+
+    const fileName = `${filePath}.${fileExtension}`;
+
+    // create necessary files
+    await mkdir(uploadsDir, { recursive: true });
+    await writeFile(path.join(uploadsDir, fileName), "", { flag: "wx" });
+
     // create code with node in transaction
     const newCode = await prisma.code.create({
       data: {
         name,
         language,
-        filePath: `/${Date.now()}-${crypto.randomUUID()}`,
+        filePath,
         ownerId: userId,
       },
     });
@@ -72,7 +99,16 @@ export async function getCode(
       return res.status(404).json({ message: "Workspace not found" });
     }
 
-    return res.status(200).json({ message: "Fetched code successfully", code });
+    // get contents from file
+    const content = await readFile(resolveCodeFilePath(code), "utf-8");
+
+    return res.status(200).json({
+      message: "Fetched code successfully",
+      code: {
+        ...code,
+        content,
+      },
+    });
   } catch (error) {
     console.log("GET_CODE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -120,21 +156,25 @@ export async function deleteCode(
     const { codeId } = req.params;
     const { id: userId } = req.user!;
 
+    // verify ownership
+    const existing = await prisma.code.findUnique({ where: { id: codeId } });
+
+    if (!existing || existing.ownerId !== userId) {
+      return res.status(404).json({ message: "Code not found" });
+    }
+
+    // unlink file from uploads
+    await unlink(resolveCodeFilePath(existing));
+
     // delete code
     const code = await prisma.code.delete({
       where: {
         id: codeId,
-        ownerId: userId,
       },
       select: {
         id: true,
       },
     });
-
-    // verify ownership
-    if (!code) {
-      return res.status(404).json({ message: "Code not found" });
-    }
 
     return res.status(200).json({ message: "Code deleted successfully", code });
   } catch (error) {

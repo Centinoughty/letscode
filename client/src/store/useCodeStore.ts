@@ -5,6 +5,7 @@ interface Code {
   id: string;
   name: string;
   language: string;
+  content?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -15,6 +16,8 @@ interface CodeState {
   error: string | null;
 
   fetchCodes: () => Promise<void>;
+
+  getCode: (codeId: string) => Promise<Code | null>;
   createCode: (name: string, language: string) => Promise<void>;
   editCode: (codeId: string, name: string) => Promise<void>;
   deleteCode: (codeId: string) => Promise<void>;
@@ -38,6 +41,22 @@ export const useCodeStore = create<CodeState>((set) => ({
           isLoading: false,
         });
       }
+    } catch (error) {
+      console.log(error);
+      set({ error: "error", isLoading: false });
+    }
+  },
+
+  getCode: async (codeId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const { data } = await api.get(`/code/${codeId}`);
+
+      console.log(data)
+
+      set({ isLoading: false });
+      return data.code;
     } catch (error) {
       console.log(error);
       set({ error: "error", isLoading: false });
