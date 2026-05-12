@@ -36,7 +36,7 @@ export default function LoginPage() {
   const loginWithGoogleRedirect = useGoogleLogin({
     flow: "auth-code",
     ux_mode: "redirect",
-    redirect_uri: "/auth/callback",
+    redirect_uri: "http://localhost:3000/auth/callback",
   });
 
   return (
