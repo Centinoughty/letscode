@@ -18,7 +18,7 @@ export default function Button({
     <>
       <button
         type={type}
-        className={`p-2 flex items-center justify-center gap-2 bg-primary outline-none text-neutral ${className}`}
+        className={`p-2 flex items-center justify-center gap-2 bg-primary outline-none text-neutral disabled:bg-zinc-600 disabled:cursor-not-allowed ${className}`}
         {...props}
       >
         {Icon && <Icon size={18} />}

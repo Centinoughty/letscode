@@ -42,7 +42,7 @@ export default function CodeEditorPage() {
   return (
     <>
       <div
-        className={`h-dvh ${poppins.className} grid grid-rows-[56px_1fr_220px]`}
+        className={`h-dvh ${poppins.className} grid grid-rows-[56px_1fr_300px]`}
       >
         <EditorHeader
           name={name}
