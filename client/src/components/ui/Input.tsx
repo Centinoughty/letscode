@@ -19,11 +19,11 @@ export default function Input({
       <div className={`flex flex-col ${poppins.className}`}>
         {label && <label className="text-sm font-medium">{label}</label>}
 
-        <div className="px-3 py-2 flex items-center gap-3 border border-black/20 duration-100 focus:border-transparent focus:ring-2 focus:ring-primary">
+        <div className="px-3 py-2 flex items-center gap-3 border border-black/20 duration-100 focus-within:border-transparent focus-within:ring-2 focus-within:ring-primary">
           {Icon && <Icon size={20} className="text-gray-600" />}
 
           <input
-            className={`grow outline-none tracking-wide ${className}`}
+            className={`grow outline-none tracking-wide cursor-text ${className}`}
             {...props}
           />
         </div>

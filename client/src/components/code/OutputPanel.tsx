@@ -9,8 +9,6 @@ export default function OutputPanel() {
         </button>
 
         <button className="px-4 py-3 text-sm text-zinc-400">Output</button>
-
-        <button className="px-4 py-3 text-sm text-zinc-400">Terminal</button>
       </div>
 
       <div className="p-4">
