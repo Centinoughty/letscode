@@ -27,6 +27,21 @@ services:
       - /app/node_modules
     networks:
       - lc-net
+  
+  socket:
+    build:
+      context: ./socket
+      dockerfile: Dockerfile.dev
+    container_name: lc-socket
+    env_file:
+      - ./socket/.env
+    ports:
+      - "8000:3000"
+    volumes:
+      - ./socket:/app
+      - /app/node_modules
+    networks:
+      - lc-net
 
   client:
     build:
