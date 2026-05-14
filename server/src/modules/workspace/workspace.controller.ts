@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { NodeType } from "@prisma/client";
+import { CollabRole, NodeType } from "@prisma/client";
 import { TypedRequest } from "../../types/request";
 import { prisma } from "../../lib/prisma";
 import * as WorkspaceSchema from "./workspace.schema";
@@ -52,12 +52,23 @@ export async function createWorkspace(
 export async function getWorkspaces(req: TypedRequest, res: Response) {
   try {
     // get data from request
-    const { id } = req.user!;
+    const { id: userId } = req.user!;
 
-    // fetch workspaces owned by user
+    // fetch workspaces owned by user or shared with user
     const workspaces = await prisma.workspace.findMany({
       where: {
-        ownerId: id,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            collaborators: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
       },
       include: {
         nodes: true,
@@ -80,18 +91,29 @@ export async function getWorkspace(
     const { workspaceId } = req.params;
     const { id: userId } = req.user!;
 
-    // fetch workspace owned by user
+    // fetch workspace and collaborator membership for current user
     const workspace = await prisma.workspace.findUnique({
       where: {
         id: workspaceId,
       },
       include: {
         nodes: true,
+        collaborators: {
+          where: {
+            userId,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    // verify ownership
-    if (!workspace || workspace.ownerId !== userId) {
+    // verify owner or any collaborator access
+    if (
+      !workspace ||
+      (workspace.ownerId !== userId && workspace.collaborators.length === 0)
+    ) {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
@@ -118,12 +140,26 @@ export async function editWorkspace(
     const { name } = req.body;
     const { id: userId } = req.user!;
 
-    // verify ownership
+    // verify owner or ADMIN collaborator access
     const existing = await prisma.workspace.findUnique({
       where: { id: workspaceId },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+            role: CollabRole.ADMIN,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
-    if (!existing || existing.ownerId !== userId) {
+    if (
+      !existing ||
+      (existing.ownerId !== userId && existing.collaborators.length === 0)
+    ) {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
@@ -152,21 +188,38 @@ export async function deleteWorkspace(
     const { workspaceId } = req.params;
     const { id: userId } = req.user!;
 
+    // verify owner or ADMIN collaborator access
+    const existing = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+            role: CollabRole.ADMIN,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (
+      !existing ||
+      (existing.ownerId !== userId && existing.collaborators.length === 0)
+    ) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
     // delete workspace
     const workspace = await prisma.workspace.delete({
       where: {
         id: workspaceId,
-        ownerId: userId,
       },
       select: {
         id: true,
       },
     });
-
-    // verify ownership
-    if (!workspace) {
-      return res.status(404).json({ message: "Workspace not found" });
-    }
 
     return res
       .status(200)
