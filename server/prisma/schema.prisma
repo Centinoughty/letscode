@@ -22,6 +22,13 @@ enum Language {
   TYPESCRIPT
 }
 
+// collaboration role
+enum CollabRole {
+  VIEW
+  EDIT
+  ADMIN
+}
+
 // User
 model User {
   id          String  @id @default(uuid())
@@ -37,10 +44,52 @@ model User {
   codes      Code[]
   workspaces Workspace[]
 
+  codeCollaborations      CodeCollaborator[]
+  workspaceCollaborations WorkspaceCollaborator[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+// Collaborator
+model CodeCollaborator {
+  id   String     @id @default(uuid())
+  role CollabRole @default(VIEW)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  codeId String
+  code   Code   @relation(fields: [codeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([codeId, userId])
+  @@index([userId])
+  @@index([codeId])
+  @@map("code_collaborators")
+}
+
+model WorkspaceCollaborator {
+  id   String     @id @default(uuid())
+  role CollabRole @default(VIEW)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@map("workspace_collaborators")
 }
 
 // Code and Workspace
@@ -52,6 +101,8 @@ model Code {
 
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id])
+
+  collaborators CodeCollaborator[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,7 +118,8 @@ model Workspace {
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id])
 
-  nodes Node[]
+  nodes         Node[]
+  collaborators WorkspaceCollaborator[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

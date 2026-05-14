@@ -1,6 +1,7 @@
 import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { Response } from "express";
 import path from "path";
+import { CollabRole } from "@prisma/client";
 import { TypedRequest } from "../../types/request";
 import * as CodeSchema from "./code.schema";
 import { prisma } from "../../lib/prisma";
@@ -64,10 +65,21 @@ export async function getCodes(req: TypedRequest, res: Response) {
     // get data from request
     const { id: userId } = req.user!;
 
-    // get all codes
+    // get all codes the user owns or collaborates on
     const codes = await prisma.code.findMany({
       where: {
-        ownerId: userId,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            collaborators: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
       },
     });
 
@@ -92,11 +104,21 @@ export async function getCode(
       where: {
         id: codeId,
       },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
-    // verify ownership
-    if (!code || code.ownerId !== userId) {
-      return res.status(404).json({ message: "Workspace not found" });
+    // verify owner or any collaborator access
+    if (!code || (code.ownerId !== userId && code.collaborators.length === 0)) {
+      return res.status(404).json({ message: "Code not found" });
     }
 
     // get contents from file
@@ -125,10 +147,26 @@ export async function editCode(
     const { name } = req.body;
     const { id: userId } = req.user!;
 
-    // verify ownership
-    const existing = await prisma.code.findUnique({ where: { id: codeId } });
+    // verify owner or ADMIN collaborator access
+    const existing = await prisma.code.findUnique({
+      where: { id: codeId },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+            role: CollabRole.ADMIN,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
 
-    if (!existing || existing.ownerId !== userId) {
+    if (
+      !existing ||
+      (existing.ownerId !== userId && existing.collaborators.length === 0)
+    ) {
       return res.status(404).json({ message: "Code not found" });
     }
 
@@ -156,10 +194,26 @@ export async function deleteCode(
     const { codeId } = req.params;
     const { id: userId } = req.user!;
 
-    // verify ownership
-    const existing = await prisma.code.findUnique({ where: { id: codeId } });
+    // verify owner or ADMIN collaborator access
+    const existing = await prisma.code.findUnique({
+      where: { id: codeId },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+            role: CollabRole.ADMIN,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
 
-    if (!existing || existing.ownerId !== userId) {
+    if (
+      !existing ||
+      (existing.ownerId !== userId && existing.collaborators.length === 0)
+    ) {
       return res.status(404).json({ message: "Code not found" });
     }
 
