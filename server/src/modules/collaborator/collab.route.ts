@@ -7,9 +7,9 @@ import * as CollabSchema from "./collab.schema";
 const router = Router();
 
 router.post(
-  "/add",
+  "/:codeId/add",
   requireAuth,
-  validate(CollabSchema.CodeParams),
+  validate(CollabSchema.CodeParams, "params"),
   validate(CollabSchema.AddCollaboratorBody),
   CollabController.addCollaborator,
 );

@@ -6,7 +6,6 @@ export const CodeParams = z.object({
 });
 
 export const AddCollaboratorBody = z.object({
-  codeId: z.uuidv4(),
   collabEmails: z.array(z.email()).min(1),
   collabRole: z
     .enum(Object.values(CollabRole) as [string, ...string[]])

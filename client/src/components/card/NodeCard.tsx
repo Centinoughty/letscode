@@ -1,12 +1,30 @@
 "use client";
 
-import { Code2, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
-import clsx from "clsx";
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
 import Button from "../ui/Button";
 import Link from "next/link";
+import Dropdown from "../ui/Dropdown";
+import { useCollaboratorStore } from "@/store/useCollaboratorStore";
+import { CollabRole, collabRoleOptions } from "@/types/CollabRole";
+
+import {
+  Code2,
+  Folder,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
+
+import {
+  KeyboardEvent as ReactKeyboardEvent,
+  SyntheticEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface NodeCardProps {
   id: string;
@@ -33,20 +51,30 @@ export default function NodeCard({
   onDelete,
 }: NodeCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+
+  const [isAddCollabOpen, setIsAddCollabOpen] = useState<boolean>(false);
+  const [emailInput, setEmailInput] = useState<string>("");
+  const [emails, setEmails] = useState<string[]>([]);
+  const [collabRole, setCollabRole] = useState<CollabRole>("VIEW");
+
+  const { addCollaborators } = useCollaboratorStore();
+
   const [isEditOpen, setIsEditOpen] = useState<boolean>(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
-  const [nextName, setNextName] = useState<string>(name);
   const [displayName, setDisplayName] = useState<string>(name);
+  const [nextName, setNextName] = useState<string>(name);
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleEditOpen = () => {
-    setDisplayName(name);
-    setNextName(name);
-    setIsEditOpen(true);
+  // helper function
+  // 1. check email if valid of not
+  const isEmailValid = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // handler to close pop-up
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -69,9 +97,49 @@ export default function NodeCard({
     };
   }, []);
 
+  // categorise the object by type
   const entityLabel = type === "FILE" ? "File" : "Workspace";
 
-  async function handleEditSubmit(event: SyntheticEvent) {
+  // add collaborator handler
+  const handleAddCollabOpen = () => {
+    setIsMenuOpen(false);
+    setIsAddCollabOpen(true);
+  };
+
+  const removeEmail = (email: string) => {
+    setEmails((prev) => prev.filter((e) => e !== email));
+  };
+
+  const handleEmailKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " " || e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+
+      const trimmedEmail = emailInput.trim();
+
+      if (
+        trimmedEmail &&
+        isEmailValid(trimmedEmail) &&
+        !emails.includes(trimmedEmail)
+      ) {
+        setEmails((prev) => [...prev, trimmedEmail]);
+        setEmailInput("");
+      }
+    }
+  };
+
+  const handleAddCollaborator = async () => {
+    await addCollaborators({ codeId: id, collabEmails: emails, collabRole });
+  };
+
+  // edit handler
+  const handleEditOpen = () => {
+    setIsMenuOpen(false);
+    setDisplayName(name);
+    setNextName(name);
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
 
     const trimmedName = nextName.trim();
@@ -81,14 +149,15 @@ export default function NodeCard({
     await onEdit?.(trimmedName);
     setIsEditOpen(false);
     setIsMenuOpen(false);
-  }
+  };
 
-  async function handleDeleteConfirm() {
+  // delete handler
+  const handleDeleteConfirm = async () => {
     await onDelete?.();
     setIsDeleted(true);
     setIsDeleteOpen(false);
     setIsMenuOpen(false);
-  }
+  };
 
   if (isDeleted) return null;
 
@@ -106,12 +175,7 @@ export default function NodeCard({
 
           <div className="relative flex items-center gap-2" ref={menuRef}>
             <span
-              className={clsx(
-                "text-xs px-2 py-1 rounded-full font-medium",
-                isOwned
-                  ? "bg-primary/20 text-primary"
-                  : "bg-gray-200 text-gray-600",
-              )}
+              className={`text-xs px-2 py-1 rounded-full font-medium ${isOwned ? "bg-primary/20 text-primary" : "bg-gray-200 text-gray-600"}`}
             >
               {isOwned ? "OWNED BY YOU" : "SHARED"}
             </span>
@@ -129,6 +193,17 @@ export default function NodeCard({
 
             {isMenuOpen && (
               <div className="absolute right-0 top-full z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                {isOwned && (
+                  <button
+                    type="button"
+                    onClick={handleAddCollabOpen}
+                    className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <User size={16} />
+                    Add People
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={handleEditOpen}
@@ -183,6 +258,59 @@ export default function NodeCard({
           </div>
         </div>
       </div>
+
+      {/* add collaborator form */}
+      <Modal
+        isOpen={isAddCollabOpen}
+        onClose={() => setIsAddCollabOpen(false)}
+        title="Add collaborator"
+      >
+        <form onSubmit={handleAddCollaborator} className="flex flex-col gap-4">
+          <div className="flex gap-2">
+            <Input
+              type="email"
+              placeholder="Add people by email"
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              onKeyDown={handleEmailKeyDown}
+              autoFocus
+            />
+
+            <Dropdown
+              value={collabRole}
+              onChange={(e) => setCollabRole(e)}
+              options={collabRoleOptions}
+            />
+          </div>
+
+          {emails.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {emails.map((email) => (
+                <div
+                  key={email}
+                  className="px-2 py-1 flex items-center gap-2 rounded-sm bg-gray-300 text-sm"
+                >
+                  <span>{email}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => removeEmail(email)}
+                    className="text-gray-800 hover:text-gray-500"
+                  >
+                    <X size={16} strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            label="Add"
+            disabled={emails.length === 0 || collabRole === null}
+          />
+        </form>
+      </Modal>
 
       {/* edit name form */}
       <Modal

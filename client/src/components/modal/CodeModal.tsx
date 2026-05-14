@@ -50,7 +50,7 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
           <Dropdown
             label="Language"
             value={language}
-            onChange={(event) => setLanguage(event)}
+            onChange={(e) => setLanguage(e)}
             options={languageOptions}
           />
 
