@@ -72,6 +72,7 @@ export async function getWorkspaces(req: TypedRequest, res: Response) {
       },
       include: {
         nodes: true,
+        collaborators: true,
       },
     });
 

@@ -81,6 +81,9 @@ export async function getCodes(req: TypedRequest, res: Response) {
           },
         ],
       },
+      include: {
+        collaborators: true,
+      },
     });
 
     return res.status(200).json({ message: "Fetched all codes", codes });

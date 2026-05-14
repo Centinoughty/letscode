@@ -1,9 +1,11 @@
-import { api } from "@/api/axios";
 import { create } from "zustand";
+import { api } from "@/api/axios";
+import { Collaborator } from "@/types/Collaborator";
 
 interface Workspace {
   id: string;
   name: string;
+  collaborators: Collaborator[];
   createdAt: string;
   updatedAt: string;
 }

@@ -163,7 +163,7 @@ export default function NodeCard({
 
   return (
     <>
-      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 cursor-pointer">
+      <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3">
         <div className="flex items-start justify-between">
           <div className="p-2 rounded-lg bg-gray-100">
             {type === "FILE" ? (

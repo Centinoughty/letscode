@@ -1,11 +1,13 @@
-import { api } from "@/api/axios";
 import { create } from "zustand";
+import { api } from "@/api/axios";
+import { Collaborator } from "@/types/Collaborator";
 
 interface Code {
   id: string;
   name: string;
   language: string;
   content?: string;
+  collaborators: Collaborator[];
   createdAt: string;
   updatedAt: string;
 }
@@ -53,7 +55,7 @@ export const useCodeStore = create<CodeState>((set) => ({
     try {
       const { data } = await api.get(`/code/${codeId}`);
 
-      console.log(data)
+      console.log(data);
 
       set({ isLoading: false });
       return data.code;
