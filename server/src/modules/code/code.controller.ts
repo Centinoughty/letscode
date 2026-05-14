@@ -82,7 +82,11 @@ export async function getCodes(req: TypedRequest, res: Response) {
         ],
       },
       include: {
-        collaborators: true,
+        collaborators: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 

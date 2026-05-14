@@ -43,7 +43,12 @@ export default function DashboardPage() {
                 language={item.language}
                 type="FILE"
                 lastEdited={formatDate(item.updatedAt)}
-                collaborators={item.collaborators.length + 1}
+                collaborators={item.collaborators}
+                isOwned={
+                  !item.collaborators.some(
+                    (collab) => collab.user.email === user?.email,
+                  )
+                }
                 onEdit={(newName) => editCode(item.id, newName)}
                 onDelete={() => deleteCode(item.id)}
               />
@@ -62,7 +67,12 @@ export default function DashboardPage() {
                 name={item.name}
                 type="WORKSPACE"
                 lastEdited={formatDate(item.updatedAt)}
-                collaborators={item.collaborators.length + 1}
+                collaborators={item.collaborators}
+                isOwned={
+                  !item.collaborators.some(
+                    (collab) => collab.user.email === user?.email,
+                  )
+                }
                 onEdit={(newName) => editWorkspace(item.id, newName)}
                 onDelete={() => deleteWorkspace(item.id)}
               />

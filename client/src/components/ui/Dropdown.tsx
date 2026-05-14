@@ -15,6 +15,7 @@ interface DropdownProps extends Omit<
 > {
   label?: string;
   options: DropdownOption[];
+  mode?: "opt-1" | "opt-2";
   className?: string;
   onChange?: (value: string) => void;
 }
@@ -22,6 +23,7 @@ interface DropdownProps extends Omit<
 export default function Dropdown({
   label,
   options,
+  mode = "opt-1",
   className = "",
   onChange,
   value,
@@ -83,7 +85,7 @@ export default function Dropdown({
 
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className="px-3 py-2 flex items-center justify-between border border-black/20 duration-100 cursor-pointer hover:border-black/30 bg-white"
+          className={`px-3 py-2 flex items-center justify-between ${mode === "opt-1" ? "border border-black/20 hover:border-black/30 duration-100" : "hover:bg-black/10 rounded-md duration-200"} cursor-pointer`}
         >
           <span className="tracking-wide">
             {selectedOption?.label || "Select..."}

@@ -25,15 +25,17 @@ import {
   useRef,
   useState,
 } from "react";
+import { Collaborator } from "@/types/Collaborator";
+import Image from "next/image";
 
 interface NodeCardProps {
   id: string;
   type: "FILE" | "WORKSPACE";
   name: string;
   language?: string;
-  lastEdited?: string;
-  collaborators?: number;
-  isOwned?: boolean;
+  lastEdited: string;
+  collaborators: Collaborator[];
+  isOwned: boolean;
 
   onEdit?: (name: string) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
@@ -45,8 +47,8 @@ export default function NodeCard({
   name,
   language,
   lastEdited,
-  collaborators = 1,
-  isOwned = true,
+  collaborators,
+  isOwned,
   onEdit,
   onDelete,
 }: NodeCardProps) {
@@ -254,7 +256,7 @@ export default function NodeCard({
               {type === "FILE" ? "Team size" : "Members"}
             </p>
 
-            <p className="text-sm text-gray-600">{collaborators}</p>
+            <p className="text-sm text-gray-600">{collaborators.length + 1}</p>
           </div>
         </div>
       </div>
@@ -302,6 +304,49 @@ export default function NodeCard({
                 </div>
               ))}
             </div>
+          )}
+
+          <p className="font-medium">People with access</p>
+
+          {collaborators.length === 0 ? (
+            <p className="text-center text-gray-500">Share with someone</p>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-2">
+                {collaborators.map((item, idx) => (
+                  <li
+                    key={idx}
+                    className="flex justify-between gap-2 items-center"
+                  >
+                    <div className="flex gap-2">
+                      <div className="relative h-8 w-8">
+                        <Image
+                          src={item.user.avatar || "https://i.pravatar.cc/100"}
+                          alt={item.user.name}
+                          fill
+                          className="object-cover rounded-full"
+                          sizes="30px"
+                          priority
+                        />
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium">{item.user.name}</p>
+                        <p className="text-xs">{item.user.email}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Dropdown
+                        value={item.role}
+                        options={collabRoleOptions}
+                        mode="opt-2"
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
 
           <Button
