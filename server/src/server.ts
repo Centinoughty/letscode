@@ -5,6 +5,7 @@ import { env } from "./config/env";
 
 import authRoutes from "./modules/auth/auth.route";
 import codeRoutes from "./modules/code/code.route";
+import collabRoutes from "./modules/collaborator/collab.route";
 import userRoutes from "./modules/user/user.route";
 import workspaceRoutes from "./modules/workspace/workspace.route";
 
@@ -27,6 +28,7 @@ export function startServer() {
 
   app.use("/api/auth", authRoutes);
   app.use("/api/code", codeRoutes);
+  app.use("/api/collaborator", collabRoutes);
   app.use("/api/user", userRoutes);
   app.use("/api/workspace", workspaceRoutes);
 

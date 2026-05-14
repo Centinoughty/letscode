@@ -1,5 +1,5 @@
-import { Language } from "@prisma/client";
 import { z } from "zod";
+import { Language } from "@prisma/client";
 
 export const CreateCodeBody = z.object({
   name: z.string(),
