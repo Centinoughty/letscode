@@ -14,7 +14,12 @@ export function requireAuth(
     }
 
     const payload = verifyAccessToken(token);
-    req.user = { id: payload.id, email: payload.email };
+    req.user = {
+      id: payload.id,
+      name: payload.name,
+      email: payload.email,
+      avatar: payload.avatar,
+    };
 
     next();
   } catch (error) {

@@ -2,5 +2,8 @@
 .env*
 !.env.example
 
+# build files
+dist/
+
 # dev environment
 .vscode/

@@ -32,7 +32,7 @@ enum CollabRole {
 // User
 model User {
   id          String  @id @default(uuid())
-  name        String?
+  name        String
   email       String  @unique
   password    String?
   avatar      String?

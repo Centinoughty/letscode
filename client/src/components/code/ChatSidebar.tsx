@@ -3,23 +3,38 @@
 import { useRef, useState, useEffect } from "react";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
-import { Divide, SendHorizontal } from "lucide-react";
+import { SendHorizontal } from "lucide-react";
+import { Socket } from "socket.io-client";
+import Image from "next/image";
 
 interface Message {
   id: string;
   text: string;
-  sender: string;
+  sender: {
+    socketId: string;
+    name: string;
+    avatar: string;
+  };
   timestamp: Date;
 }
 
 interface MessageGroup {
-  sender: string;
+  sender: {
+    socketId: string;
+    name: string;
+    avatar: string;
+  };
   messages: Message[];
+}
+
+interface ChatSidebarProps {
+  codeId: string;
+  socket: Socket | null;
 }
 
 const MAX_MESSAGE_LENGTH = 500;
 
-export default function ChatSidebar() {
+export default function ChatSidebar({ codeId, socket }: ChatSidebarProps) {
   const [message, setMessage] = useState<string>("");
   const [groupedMessages, setGroupedMessages] = useState<MessageGroup[]>([]);
 
@@ -35,38 +50,50 @@ export default function ChatSidebar() {
     scrollToBottom();
   }, [groupedMessages]);
 
-  const handleSendMessage = () => {
-    if (!message.trim() || message.length > MAX_MESSAGE_LENGTH) {
-      return;
-    }
+  useEffect(() => {
+    if (!socket) return;
 
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      text: message.trim(),
-      sender: "Nser",
-      timestamp: new Date(),
-    };
+    const handleIncomingMessage = (incMessage: Message) => {
+      setGroupedMessages((prev) => {
+        const lastGroup = prev[prev.length - 1];
 
-    setGroupedMessages((prev) => {
-      const lastGroup = prev[prev.length - 1];
+        if (
+          lastGroup &&
+          lastGroup.sender.socketId === incMessage.sender.socketId
+        ) {
+          return [
+            ...prev.slice(0, -1),
+            {
+              ...lastGroup,
+              messages: [...lastGroup.messages, incMessage],
+            },
+          ];
+        }
 
-      if (lastGroup && lastGroup.sender === newMessage.sender) {
         return [
-          ...prev.slice(0, -1),
+          ...prev,
           {
-            ...lastGroup,
-            messages: [...lastGroup.messages, newMessage],
+            sender: incMessage.sender,
+            messages: [incMessage],
           },
         ];
-      }
+      });
+    };
 
-      return [
-        ...prev,
-        {
-          sender: newMessage.sender,
-          messages: [newMessage],
-        },
-      ];
+    socket.on("chat:message", handleIncomingMessage);
+
+    return () => {
+      socket.off("chat:message", handleIncomingMessage);
+    };
+  }, [socket]);
+
+  const handleSendMessage = () => {
+    if (!socket || !message.trim() || message.length > MAX_MESSAGE_LENGTH)
+      return;
+
+    socket.emit("chat:message", {
+      roomId: codeId,
+      message: message.trim(),
     });
 
     setMessage("");
@@ -90,8 +117,14 @@ export default function ChatSidebar() {
           <div className="p-2 flex-1 flex flex-col gap-3 overflow-y-auto">
             {groupedMessages.map((group, groupIdx) => (
               <div key={groupIdx} className="flex gap-2">
-                <div className="w-8 h-8 flex items-center justify-center text-xs font-medium rounded-full bg-primary text-white shrink-0">
-                  {group.sender[0]}
+                <div className="relative w-8 h-8 flex">
+                  <Image
+                    src={group.sender.avatar}
+                    alt={group.sender.name}
+                    fill
+                    className="rounded-full object-cover"
+                    sizes="80px"
+                  />
                 </div>
 
                 <div className="flex-1 flex flex-col gap-1">

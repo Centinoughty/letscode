@@ -5,7 +5,7 @@ import { env } from "../config/env";
 // environment variables
 const ACCESS_SECRET: Secret = env.ACCESS_SECRET as Secret;
 const ACCESS_EXPIRY: SignOptions["expiresIn"] =
-  (env.ACCESS_EXPIRY as SignOptions["expiresIn"]) || "1m";
+  (env.ACCESS_EXPIRY as SignOptions["expiresIn"]) || "1d";
 
 const REFRESH_SECRET: Secret = env.REFRESH_SECRET as Secret;
 const REFRESH_EXPIRY: SignOptions["expiresIn"] =

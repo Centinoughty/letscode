@@ -1,6 +1,9 @@
 # node modules
 node_modules
 
+# build files
+dist/
+
 # environment variables
 .env*
 !.env.example

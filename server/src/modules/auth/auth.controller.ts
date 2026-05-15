@@ -54,7 +54,13 @@ export async function registerUser(
     });
 
     // create cookie
-    const tokenPayload = { id: newUser.id, email: newUser.email };
+    const tokenPayload = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      avatar: newUser.avatar ?? undefined,
+    };
+
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);
 
@@ -113,7 +119,13 @@ export async function loginUser(
     }
 
     // create cookie
-    const tokenPayload = { id: user.id, email: user.email };
+    const tokenPayload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar ?? undefined,
+    };
+
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);
 
@@ -189,7 +201,7 @@ export async function googleLogin(
       },
       create: {
         email,
-        name: name ?? null,
+        name: name ?? "User",
         avatar: picture ?? null,
         is_google: true,
         is_verified: true,
@@ -197,7 +209,13 @@ export async function googleLogin(
     });
 
     // create cookie
-    const tokenPayload = { id: googleUser.id, email: googleUser.email };
+    const tokenPayload = {
+      id: googleUser.id,
+      name: googleUser.name,
+      email: googleUser.email,
+      avatar: googleUser.avatar ?? undefined,
+    };
+
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);
 

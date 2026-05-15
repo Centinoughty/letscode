@@ -4,22 +4,40 @@ import ChatSidebar from "@/components/code/ChatSidebar";
 import EditorHeader from "@/components/code/EditorHeader";
 import MonacoEditor from "@/components/code/MonacoEditor";
 import OutputPanel from "@/components/code/OutputPanel";
+import { getSocket } from "@/lib/socket";
 import { useCodeStore } from "@/store/useCodeStore";
 import { poppins } from "@/styles/font";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
 export default function CodeEditorPage() {
   const params = useParams<{ id: string }>();
+  const codeId = params.id;
+
   const { getCode, editCode } = useCodeStore();
 
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
   const [content, setContent] = useState<string>("");
 
-  useEffect(() => {
-    const codeId = params.id;
+  const [socketInst, setSocketInst] = useState<Socket | null>(null);
 
+  // socket instance init
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.emit("room:join", { roomId: codeId });
+
+    setSocketInst(socket);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  // mount code
+  useEffect(() => {
     if (!codeId) {
       return;
     }
@@ -64,7 +82,7 @@ export default function CodeEditorPage() {
             <MonacoEditor initialValue={content} language={language} />
           </div>
 
-          <ChatSidebar />
+          <ChatSidebar codeId={codeId} socket={socketInst} />
         </div>
 
         <OutputPanel />
