@@ -1,7 +1,11 @@
 import { Editor, OnChange } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
 interface CodeEnvirmentProps {
+  socket: Socket | null;
+  roomId?: string;
+
   initialValue?: string;
   language?: string;
   height?: string;
@@ -10,8 +14,10 @@ interface CodeEnvirmentProps {
 }
 
 export default function MonacoEditor({
+  socket,
+  roomId,
   initialValue = "",
-  language = "javascript",
+  language,
   height = "100%",
   readOnly = false,
   onChange,
@@ -27,7 +33,37 @@ export default function MonacoEditor({
 
     setValue(updatedValue);
     onChange?.(updatedValue);
+
+    if (!socket || !roomId || readOnly) return;
+
+    socket.emit("code:update", {
+      roomId,
+      code: updatedValue,
+    });
   };
+
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    const handleRemoteUpdate = ({
+      roomId: incomingRoomId,
+      code,
+    }: {
+      roomId: string;
+      code: string;
+    }) => {
+      if (incomingRoomId !== roomId) return;
+
+      setValue(code);
+      onChange?.(code);
+    };
+
+    socket.on("code:update", handleRemoteUpdate);
+
+    return () => {
+      socket.off("code:update", handleRemoteUpdate);
+    };
+  }, [onChange, roomId, socket]);
 
   return (
     <>

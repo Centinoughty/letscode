@@ -27,14 +27,32 @@ export default function CodeEditorPage() {
   useEffect(() => {
     const socket = getSocket();
 
-    socket.emit("room:join", { roomId: codeId });
+    const joinRoom = () => {
+      if (codeId) {
+        socket.emit("room:join", { roomId: codeId });
+      }
+    };
+
+    // If socket already connected, join immediately; otherwise wait for connect
+    if (socket.connected) {
+      joinRoom();
+    } else {
+      socket.on("connect", joinRoom);
+    }
 
     setSocketInst(socket);
 
     return () => {
-      socket.disconnect();
+      // prefer leaving the room instead of disconnecting the shared socket
+      try {
+        if (codeId) socket.emit("room:leave", { roomId: codeId });
+      } catch (e) {
+        // ignore
+      }
+
+      setSocketInst(null);
     };
-  }, []);
+  }, [codeId]);
 
   // mount code
   useEffect(() => {
@@ -79,10 +97,15 @@ export default function CodeEditorPage() {
 
         <div className="grid overflow-hidden grid-cols-[1fr_360px]">
           <div className="p-2 overflow-hidden">
-            <MonacoEditor initialValue={content} language={language} />
+            <MonacoEditor
+              socket={socketInst}
+              roomId={codeId}
+              initialValue={content}
+              language={language}
+            />
           </div>
 
-          <ChatSidebar codeId={codeId} socket={socketInst} />
+          <ChatSidebar socket={socketInst} codeId={codeId} />
         </div>
 
         <OutputPanel />

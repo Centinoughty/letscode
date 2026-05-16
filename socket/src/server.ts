@@ -6,6 +6,7 @@ import { RoomManager } from "./managers/roomManager";
 import { socketAuth } from "./middlewares/socketAuth.middleware";
 import { roomHandler } from "./handler/joinRoom.handler";
 import { chatHandler } from "./handler/chat.handler";
+import { codeHandler } from "./handler/codeHandler";
 
 export function initializeSocketServer() {
   const httpServer = createServer();
@@ -25,6 +26,7 @@ export function initializeSocketServer() {
   io.on("connection", (socket) => {
     roomHandler(io, socket, roomManager);
     chatHandler(io, socket, roomManager);
+    codeHandler(io, socket, roomManager);
   });
 
   httpServer.listen(env.PORT, () => {

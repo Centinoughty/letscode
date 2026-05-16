@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import { parse } from "cookie";
 import { Socket } from "socket.io";
 import { verifyJwtToken } from "../utils/token";
 
@@ -16,12 +16,13 @@ declare module "socket.io" {
 
 export function socketAuth(socket: Socket, next: (err?: Error) => void) {
   try {
+    console.log("hkfbg");
     const rawCookie = socket.handshake.headers.cookie;
     if (!rawCookie) {
       return next(new Error("Unauthorized"));
     }
 
-    const cookies = cookie.parse(rawCookie);
+    const cookies = parse(rawCookie);
     const token = cookies.accessToken;
     if (!token) {
       return next(new Error("Unauthorized"));
@@ -32,6 +33,7 @@ export function socketAuth(socket: Socket, next: (err?: Error) => void) {
 
     next();
   } catch (error) {
+    console.log(error);
     next(new Error("Unauthorized"));
   }
 }
