@@ -8,7 +8,7 @@ export class RoomManager {
     const room: Room = {
       roomId,
       users: new Map(),
-      code: "",
+      code: null,
     };
 
     this.store.setRoom(roomId, room);

@@ -8,5 +8,5 @@ export interface User {
 export interface Room {
   roomId: string;
   users: Map<string, User>;
-  code: string;
+  code: string | null;
 }

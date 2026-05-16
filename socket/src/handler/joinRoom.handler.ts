@@ -22,10 +22,12 @@ export function roomHandler(
 
       let codeToSync = room.code;
 
-      // Seed room code from persisted content when this room has no in-memory code yet.
-      if (!codeToSync && content) {
-        roomManager.updateCode(roomId, content);
-        codeToSync = content;
+      // Seed room code from persisted content only when the room has no in-memory code yet.
+      if (codeToSync === null) {
+        const fallbackCode = content ?? "";
+
+        roomManager.updateCode(roomId, fallbackCode);
+        codeToSync = fallbackCode;
       }
 
       socket.emit("code:update", {
