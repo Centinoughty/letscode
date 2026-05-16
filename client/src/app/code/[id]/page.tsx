@@ -20,16 +20,19 @@ export default function CodeEditorPage() {
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [isCodeLoaded, setIsCodeLoaded] = useState<boolean>(false);
 
   const [socketInst, setSocketInst] = useState<Socket | null>(null);
 
   // socket instance init
   useEffect(() => {
+    if (!codeId || !isCodeLoaded) return;
+
     const socket = getSocket();
 
     const joinRoom = () => {
       if (codeId) {
-        socket.emit("room:join", { roomId: codeId });
+        socket.emit("room:join", { roomId: codeId, content });
       }
     };
 
@@ -43,6 +46,8 @@ export default function CodeEditorPage() {
     setSocketInst(socket);
 
     return () => {
+      socket.off("connect", joinRoom);
+
       // prefer leaving the room instead of disconnecting the shared socket
       try {
         if (codeId) socket.emit("room:leave", { roomId: codeId });
@@ -52,7 +57,7 @@ export default function CodeEditorPage() {
 
       setSocketInst(null);
     };
-  }, [codeId]);
+  }, [codeId, content, isCodeLoaded]);
 
   // mount code
   useEffect(() => {
@@ -60,20 +65,24 @@ export default function CodeEditorPage() {
       return;
     }
 
+    setIsCodeLoaded(false);
+
     async function loadCode() {
       const code = await getCode(codeId);
 
       if (!code) {
+        setIsCodeLoaded(true);
         return;
       }
 
       setName(code.name);
       setLanguage(code.language.toLowerCase());
       setContent(code.content || "");
+      setIsCodeLoaded(true);
     }
 
     loadCode();
-  }, [getCode, params.id]);
+  }, [getCode, codeId]);
 
   return (
     <>

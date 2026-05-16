@@ -6,23 +6,39 @@ export function roomHandler(
   socket: Socket,
   roomManager: RoomManager,
 ) {
-  socket.on("room:join", ({ roomId }: { roomId: string }) => {
-    if (!socket.user) return;
+  socket.on(
+    "room:join",
+    ({ roomId, content }: { roomId: string; content?: string }) => {
+      if (!socket.user) return;
 
-    socket.join(roomId);
+      socket.join(roomId);
 
-    roomManager.joinRoom(roomId, {
-      socketId: socket.id,
-      name: socket.user.name,
-      email: socket.user.email,
-      avatar: socket.user.avatar,
-    });
+      const room = roomManager.joinRoom(roomId, {
+        socketId: socket.id,
+        name: socket.user.name,
+        email: socket.user.email,
+        avatar: socket.user.avatar,
+      });
 
-    io.to(roomId).emit("room:user_join", {
-      socketId: socket.id,
-      name: socket.user.name,
-    });
-  });
+      let codeToSync = room.code;
+
+      // Seed room code from persisted content when this room has no in-memory code yet.
+      if (!codeToSync && content) {
+        roomManager.updateCode(roomId, content);
+        codeToSync = content;
+      }
+
+      socket.emit("code:update", {
+        roomId,
+        code: codeToSync,
+      });
+
+      io.to(roomId).emit("room:user_join", {
+        socketId: socket.id,
+        name: socket.user.name,
+      });
+    },
+  );
 
   socket.on("disconnecting", () => {
     socket.rooms.forEach((roomId) => {
