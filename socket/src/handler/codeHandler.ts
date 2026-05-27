@@ -9,7 +9,10 @@ export function codeHandler(
   socket.on(
     "code:update",
     ({ roomId, code }: { roomId: string; code: string }) => {
-      const room = roomManager.getOrCreateRoom(roomId);
+      const room = roomManager.getRoom(roomId);
+
+      if (!room) return;
+
       const user = room.users.get(socket.id);
 
       if (!user) return;

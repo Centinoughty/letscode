@@ -25,6 +25,7 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
+      - shared:/shared
     networks:
       - lc-net
   
@@ -40,6 +41,7 @@ services:
     volumes:
       - ./socket:/app
       - /app/node_modules
+      - shared:/shared
     networks:
       - lc-net
 
@@ -62,6 +64,8 @@ services:
 volumes:
   lc-db:
     name: lc-db
+  shared:
+    name: lc-shared
 
 networks:
   lc-net:

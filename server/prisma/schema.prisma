@@ -97,7 +97,6 @@ model Code {
   id       String   @id @default(uuid())
   name     String
   language Language
-  filePath String   @unique
 
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id])

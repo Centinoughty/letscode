@@ -5,8 +5,11 @@ export interface User {
   avatar?: string;
 }
 
+export type Language = "CPP" | "JAVASCRIPT" | "PYTHON" | "TYPESCRIPT";
+
 export interface Room {
   roomId: string;
+  language: Language;
   users: Map<string, User>;
-  code: string | null;
+  code: string;
 }

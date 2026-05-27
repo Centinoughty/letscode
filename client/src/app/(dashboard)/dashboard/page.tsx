@@ -14,6 +14,8 @@ export default function DashboardPage() {
   const { workspaces, fetchWorkspaces, editWorkspace, deleteWorkspace } =
     useWorkspaceStore();
 
+  const userEmail = user?.email;
+
   useEffect(() => {
     fetchCodes();
     fetchWorkspaces();
@@ -43,10 +45,10 @@ export default function DashboardPage() {
                 language={item.language}
                 type="FILE"
                 lastEdited={formatDate(item.updatedAt)}
-                collaborators={item.collaborators}
+                collaborators={item.collaborators ?? []}
                 isOwned={
-                  !item.collaborators.some(
-                    (collab) => collab.user.email === user?.email,
+                  !(item.collaborators ?? []).some(
+                    (collab) => collab.user.email === userEmail,
                   )
                 }
                 onEdit={(newName) => editCode(item.id, newName)}
@@ -67,10 +69,10 @@ export default function DashboardPage() {
                 name={item.name}
                 type="WORKSPACE"
                 lastEdited={formatDate(item.updatedAt)}
-                collaborators={item.collaborators}
+                collaborators={item.collaborators ?? []}
                 isOwned={
-                  !item.collaborators.some(
-                    (collab) => collab.user.email === user?.email,
+                  !(item.collaborators ?? []).some(
+                    (collab) => collab.user.email === userEmail,
                   )
                 }
                 onEdit={(newName) => editWorkspace(item.id, newName)}

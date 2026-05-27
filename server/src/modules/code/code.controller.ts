@@ -7,7 +7,7 @@ import * as CodeSchema from "./code.schema";
 import { prisma } from "../../lib/prisma";
 import { languageExtensions } from "../../config/langauge";
 
-const uploadsDir = path.resolve(__dirname, "../../../uploads");
+const uploadsDir = "/shared/code";
 
 function resolveCodeFilePath(code: {
   filePath: string;
@@ -30,22 +30,11 @@ export async function createCode(
     const { name, language } = req.body;
     const { id: userId } = req.user!;
 
-    // set file properties
-    const filePath = `${Date.now()}-${crypto.randomUUID()}`;
-    const fileExtension = languageExtensions[language];
-
-    const fileName = `${filePath}.${fileExtension}`;
-
-    // create necessary files
-    await mkdir(uploadsDir, { recursive: true });
-    await writeFile(path.join(uploadsDir, fileName), "", { flag: "wx" });
-
     // create code with node in transaction
     const newCode = await prisma.code.create({
       data: {
         name,
         language,
-        filePath,
         ownerId: userId,
       },
     });
@@ -128,15 +117,9 @@ export async function getCode(
       return res.status(404).json({ message: "Code not found" });
     }
 
-    // get contents from file
-    const content = await readFile(resolveCodeFilePath(code), "utf-8");
-
     return res.status(200).json({
       message: "Fetched code successfully",
-      code: {
-        ...code,
-        content,
-      },
+      code,
     });
   } catch (error) {
     console.log("GET_CODE_ERROR", error);
@@ -224,9 +207,6 @@ export async function deleteCode(
       return res.status(404).json({ message: "Code not found" });
     }
 
-    // unlink file from uploads
-    await unlink(resolveCodeFilePath(existing));
-
     // delete code
     const code = await prisma.code.delete({
       where: {
@@ -236,6 +216,14 @@ export async function deleteCode(
         id: true,
       },
     });
+
+    // unlink file from uploads
+    await unlink(
+      resolveCodeFilePath({
+        filePath: existing.id,
+        language: existing.language,
+      }),
+    );
 
     return res.status(200).json({ message: "Code deleted successfully", code });
   } catch (error) {

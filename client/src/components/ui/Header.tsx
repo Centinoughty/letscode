@@ -27,13 +27,13 @@ export default function Header() {
           <Button
             onClick={() => setIsCodeOpen(true)}
             label="+ Code"
-            className="rounded-lg"
+            className="rounded-sm"
           />
 
           <Button
             onClick={() => setIsWorkspaceOpen(true)}
             label="+ Workspace"
-            className="rounded-lg"
+            className="rounded-sm"
           />
 
           <button className="hover:bg-gray-100 transition">

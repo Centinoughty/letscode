@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { RoomManager } from "../managers/roomManager";
+import { Language } from "../types/room";
 
 export function roomHandler(
   io: Server,
@@ -8,27 +9,19 @@ export function roomHandler(
 ) {
   socket.on(
     "room:join",
-    ({ roomId, content }: { roomId: string; content?: string }) => {
+    async ({ roomId, language }: { roomId: string; language: Language }) => {
       if (!socket.user) return;
 
       socket.join(roomId);
 
-      const room = roomManager.joinRoom(roomId, {
+      const room = await roomManager.joinRoom(roomId, language, {
         socketId: socket.id,
         name: socket.user.name,
         email: socket.user.email,
         avatar: socket.user.avatar,
       });
 
-      let codeToSync = room.code;
-
-      // Seed room code from persisted content only when the room has no in-memory code yet.
-      if (codeToSync === null) {
-        const fallbackCode = content ?? "";
-
-        roomManager.updateCode(roomId, fallbackCode);
-        codeToSync = fallbackCode;
-      }
+      const codeToSync = room.code;
 
       socket.emit("code:update", {
         roomId,
@@ -43,14 +36,16 @@ export function roomHandler(
   );
 
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((roomId) => {
-      if (roomId === socket.id) return;
+    void (async () => {
+      for (const roomId of socket.rooms) {
+        if (roomId === socket.id) continue;
 
-      roomManager.leaveRoom(roomId, socket.id);
+        await roomManager.leaveRoom(roomId, socket.id);
 
-      socket.to(roomId).emit("room:user_leave", {
-        socketId: socket.id,
-      });
-    });
+        socket.to(roomId).emit("room:user_leave", {
+          socketId: socket.id,
+        });
+      }
+    })();
   });
 }

@@ -26,13 +26,16 @@ export default function CodeEditorPage() {
 
   // socket instance init
   useEffect(() => {
-    if (!codeId || !isCodeLoaded) return;
+    if (!codeId || !isCodeLoaded || !language) return;
 
     const socket = getSocket();
 
     const joinRoom = () => {
       if (codeId) {
-        socket.emit("room:join", { roomId: codeId, content });
+        socket.emit("room:join", {
+          roomId: codeId,
+          language: language.toUpperCase(),
+        });
       }
     };
 
@@ -57,7 +60,7 @@ export default function CodeEditorPage() {
 
       setSocketInst(null);
     };
-  }, [codeId, content, isCodeLoaded]);
+  }, [codeId, isCodeLoaded, language]);
 
   // mount code
   useEffect(() => {

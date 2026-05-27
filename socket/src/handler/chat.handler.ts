@@ -9,7 +9,10 @@ export function chatHandler(
   socket.on(
     "chat:message",
     ({ roomId, message }: { roomId: string; message: string }) => {
-      const room = roomManager.getOrCreateRoom(roomId);
+      const room = roomManager.getRoom(roomId);
+
+      if (!room) return;
+
       const user = room.users.get(socket.id);
 
       if (!user) return;
