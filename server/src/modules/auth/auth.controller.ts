@@ -14,6 +14,7 @@ import {
   refreshCookieOptions,
   signAccessToken,
   signRefreshToken,
+  verifyRefreshToken,
 } from "../../utils/token";
 
 const client = new OAuth2Client(
@@ -236,11 +237,41 @@ export async function googleLogin(
   }
 }
 
+export async function refreshAccessToken(req: TypedRequest, res: Response) {
+  try {
+    // get the refresh cookie
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      res.clearCookie("accessToken", accessCookieOptions);
+      res.clearCookie("refreshToken", refreshCookieOptions);
+
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // get the payload from token and sign new access token
+    const { id, name, email, avatar } = verifyRefreshToken(refreshToken);
+    const accessToken = signAccessToken({ id, name, email, avatar });
+
+    res.cookie("accessToken", accessToken, accessCookieOptions);
+
+    return res.status(200).json({
+      message: "Access token refreshed successfully",
+    });
+  } catch (error) {
+    console.log("TOKEN_REFRESH_ERROR", error);
+    res.clearCookie("accessToken", accessCookieOptions);
+    res.clearCookie("refreshToken", refreshCookieOptions);
+
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+}
+
 export async function logout(_: TypedRequest, res: Response) {
   try {
     // clear cookies
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", accessCookieOptions);
+    res.clearCookie("refreshToken", refreshCookieOptions);
 
     return res.status(200).json({
       message: "User logged out successfully",

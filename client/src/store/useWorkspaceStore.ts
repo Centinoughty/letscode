@@ -27,6 +27,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   error: null,
 
   fetchWorkspaces: async () => {
+    const { isLoading } = useWorkspaceStore.getState();
+
+    if (isLoading) {
+      return;
+    }
+
     set({ isLoading: true, error: null });
 
     try {

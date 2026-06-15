@@ -6,25 +6,25 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 export function ProtectedLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading, getUser } = useAuthStore();
+  const { isAuthenticated, isLoading, isAuthChecked } = useAuthStore();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      await getUser();
-    };
+    if (isAuthChecked && !isLoading && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isAuthenticated, isAuthChecked, isLoading, router]);
 
-    checkAuth();
-  }, [getUser]);
+  if (!isAuthChecked || isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
+        Checking authentication...
+      </div>
+    );
+  }
 
-  // useEffect(() => {
-  //   if (!isLoading && !isAuthenticated) {
-  //     router.push("/login");
-  //   }
-  // }, [isAuthenticated, isLoading, router]);
-
-  // if (!isAuthenticated) {
-  //   return null;
-  // }
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return <>{children}</>;
 }

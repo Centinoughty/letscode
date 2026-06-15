@@ -12,6 +12,7 @@ import {
   LogOut,
   Plus,
   LucideIcon,
+  Settings,
 } from "lucide-react";
 import { mont } from "@/styles/font";
 import WorkspaceModal from "../modal/WorkspaceModal";
@@ -28,6 +29,7 @@ const sidebarItems: SidebarItem[] = [
   { name: "Workspaces", url: "/", icon: Folder },
   { name: "Files", url: "/", icon: Code2 },
   { name: "Team", url: "/", icon: Users },
+  { name: "Profile", url: "/profile", icon: Settings },
 ];
 
 export default function Sidebar() {

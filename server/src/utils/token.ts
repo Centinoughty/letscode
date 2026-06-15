@@ -46,6 +46,7 @@ export const accessCookieOptions = {
   httpOnly: true,
   secure: isProd,
   sameSite: (isProd ? "none" : "lax") as "none" | "lax",
+  path: "/",
   maxAge: 24 * 60 * 60 * 1000,
 };
 
@@ -53,5 +54,6 @@ export const refreshCookieOptions = {
   httpOnly: true,
   secure: isProd,
   sameSite: (isProd ? "none" : "lax") as "none" | "lax",
+  path: "/api/auth/refresh",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };

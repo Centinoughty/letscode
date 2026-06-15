@@ -31,6 +31,12 @@ export const useCodeStore = create<CodeState>((set) => ({
   error: null,
 
   fetchCodes: async () => {
+    const { isLoading } = useCodeStore.getState();
+
+    if (isLoading) {
+      return;
+    }
+
     set({ isLoading: true, error: null });
 
     try {

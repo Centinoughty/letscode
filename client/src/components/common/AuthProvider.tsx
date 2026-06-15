@@ -1,14 +1,20 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { getUser } = useAuthStore();
+  const { getUser, isAuthChecked } = useAuthStore();
+  const hasBootstrapped = useRef(false);
 
   useEffect(() => {
-    getUser();
-  }, [getUser]);
+    if (hasBootstrapped.current || isAuthChecked) {
+      return;
+    }
+
+    hasBootstrapped.current = true;
+    void getUser();
+  }, [getUser, isAuthChecked]);
 
   return <>{children}</>;
 }

@@ -16,6 +16,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthChecked: boolean;
 
   errorFrom: string | null;
   error: string | null;
@@ -34,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isAuthChecked: false,
   error: null,
   errorFrom: null,
 
@@ -50,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
+        isAuthChecked: true,
         error: null,
       });
     } catch (error) {
@@ -62,7 +65,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: message,
         isLoading: false,
+        user: null,
         isAuthenticated: false,
+        isAuthChecked: true,
         errorFrom: "login",
       });
     }
@@ -82,6 +87,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
+        isAuthChecked: true,
         error: null,
         errorFrom: "register",
       });
@@ -95,7 +101,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: message,
         isLoading: false,
+        user: null,
         isAuthenticated: false,
+        isAuthChecked: true,
       });
     }
   },
@@ -110,6 +118,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
+        isAuthChecked: true,
         error: null,
       });
     } catch (error) {
@@ -122,7 +131,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: message,
         isLoading: false,
+        user: null,
         isAuthenticated: false,
+        isAuthChecked: true,
         errorFrom: "google",
       });
     }
@@ -138,6 +149,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: data.user,
         isAuthenticated: true,
         isLoading: false,
+        isAuthChecked: true,
         error: null,
       });
     } catch (error) {
@@ -150,7 +162,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: message,
         isLoading: false,
+        user: null,
         isAuthenticated: false,
+        isAuthChecked: true,
       });
     }
   },
@@ -183,7 +197,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, isAuthChecked: true });
 
     try {
       await api.post("/auth/logout");
@@ -197,7 +211,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         error: message,
         isLoading: false,
+        user: null,
         isAuthenticated: false,
+        isAuthChecked: true,
       });
     }
   },
