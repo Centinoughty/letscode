@@ -8,6 +8,8 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.string().transform(Number),
+
+  DOCKER_SOCKET_PATH: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
