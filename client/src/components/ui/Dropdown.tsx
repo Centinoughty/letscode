@@ -97,7 +97,7 @@ export default function Dropdown({
         </div>
 
         {isOpen && (
-          <div className="absolute top-full left-0 w-full mt-1 border border-black/20 bg-white z-50 shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 w-full mt-1 rounded-sm bg-white z-50 border border-gray-200 shadow-2xl max-h-60 overflow-y-auto">
             {options.map((option, idx) => (
               <div
                 key={idx}

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { string, z } from "zod";
 import { Language } from "@prisma/client";
 
 export const CreateCodeBody = z.object({
@@ -16,6 +16,11 @@ export const EditCodeBody = z.object({
   name: z.string(),
 });
 
+export const RunBody = z.object({
+  stdin: z.string(),
+});
+
 export type CreateCodeBody = z.infer<typeof CreateCodeBody>;
 export type CodeParams = z.infer<typeof CodeParams>;
 export type EditCodeBody = z.infer<typeof EditCodeBody>;
+export type RunBody = z.infer<typeof RunBody>;

@@ -15,12 +15,15 @@ export default function CodeEditorPage() {
   const params = useParams<{ id: string }>();
   const codeId = params.id;
 
-  const { getCode, editCode } = useCodeStore();
+  const { getCode, editCode, runCode } = useCodeStore();
 
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isCodeLoaded, setIsCodeLoaded] = useState<boolean>(false);
+
+  const [input, setInput] = useState<string>("");
+  const [runOutput, setRunOutput] = useState<string[]>([]);
 
   const [socketInst, setSocketInst] = useState<Socket | null>(null);
 
@@ -105,6 +108,19 @@ export default function CodeEditorPage() {
 
             editCode(codeId, name.trim());
           }}
+          onRun={async () => {
+            if (!codeId) {
+              return;
+            }
+
+            const result = await runCode(codeId, input);
+            const output: string[] = [];
+
+            if (result.stdout) output.push(result.stdout);
+            if (result.stderr) output.push(result.stderr);
+
+            setRunOutput(output);
+          }}
         />
 
         <div className="grid overflow-hidden grid-cols-[1fr_360px]">
@@ -120,7 +136,7 @@ export default function CodeEditorPage() {
           <ChatSidebar socket={socketInst} codeId={codeId} />
         </div>
 
-        <OutputPanel />
+        <OutputPanel input={input} setInput={setInput} output={runOutput} />
       </div>
     </>
   );

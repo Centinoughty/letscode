@@ -23,6 +23,10 @@ interface CodeState {
   createCode: (name: string, language: string) => Promise<void>;
   editCode: (codeId: string, name: string) => Promise<void>;
   deleteCode: (codeId: string) => Promise<void>;
+  runCode: (
+    codeId: string,
+    stdin: string,
+  ) => Promise<{ stdout: string; stderr: string }>;
 }
 
 export const useCodeStore = create<CodeState>((set) => ({
@@ -131,5 +135,27 @@ export const useCodeStore = create<CodeState>((set) => ({
       console.log(error);
       set({ error: "error", isLoading: false });
     }
+  },
+
+  runCode: async (codeId: string, stdin: string) => {
+    try {
+      const { data, status } = await api.post(`/code/${codeId}/run`, {
+        stdin,
+      });
+
+      if (status === 200) {
+        return {
+          stdout: data.stdout ?? "",
+          stderr: data.stderr ?? "",
+        };
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    return {
+      stdout: "",
+      stderr: "Execution failed",
+    };
   },
 }));

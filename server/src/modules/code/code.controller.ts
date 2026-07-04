@@ -6,6 +6,7 @@ import { TypedRequest } from "../../types/request";
 import * as CodeSchema from "./code.schema";
 import { prisma } from "../../lib/prisma";
 import { languageExtensions } from "../../config/langauge";
+import { env } from "../../config/env";
 
 const uploadsDir = "/shared/code";
 
@@ -228,6 +229,64 @@ export async function deleteCode(
     return res.status(200).json({ message: "Code deleted successfully", code });
   } catch (error) {
     console.log("DELETE_CODE_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+export async function executeCode(
+  req: TypedRequest<CodeSchema.CodeParams, CodeSchema.RunBody, {}>,
+  res: Response,
+) {
+  try {
+    // get data from request
+    const { codeId } = req.params;
+    const { stdin } = req.body;
+    const { id: userId } = req.user!;
+
+    // find code
+    const code = await prisma.code.findUnique({
+      where: { id: codeId },
+      select: {
+        id: true,
+        language: true,
+        ownerId: true,
+        collaborators: {
+          where: { userId },
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!code || (code.ownerId !== userId && code.collaborators.length === 0)) {
+      return res.status(404).json({ message: "Code not found" });
+    }
+
+    // get result from runner
+    const runnerRes = await fetch(`${env.RUNNER_API_URL}/containers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        language: code.language.toLowerCase(),
+        codeId: code.id,
+        stdin: stdin,
+      }),
+    });
+
+    if (!runnerRes.ok) {
+      return res.status(500).json({ message: "Runner execution failed" });
+    }
+
+    const result = await runnerRes.json();
+
+    return res.status(200).json({
+      message: "Code executed successfully",
+      stdout: result.stdout ?? "",
+      stderr: result.stderr ?? "",
+    });
+  } catch (error) {
+    console.log("EXECUTE_CODE_ERROR", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

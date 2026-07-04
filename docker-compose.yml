@@ -29,6 +29,21 @@ services:
     networks:
       - lc-net
   
+  runner:
+    build:
+      context: ./runner
+      dockerfile: Dockerfile.dev
+    container_name: lc-runner
+    env_file:
+      - ./runner/.env
+    volumes:
+      - shared:/shared
+      - /app/node_modules
+      - ./runner:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - lc-net
+  
   socket:
     build:
       context: ./socket

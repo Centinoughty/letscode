@@ -12,6 +12,7 @@ interface HeaderProps {
   language: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onBlur?: () => void;
+  onRun?: () => void;
 }
 
 export default function EditorHeader({
@@ -19,6 +20,7 @@ export default function EditorHeader({
   language,
   onChange,
   onBlur,
+  onRun,
 }: HeaderProps) {
   return (
     <header className="px-4 flex items-center justify-between border-b border-gray-200">
@@ -37,7 +39,12 @@ export default function EditorHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        <Button label="Run" icon={Play} className="rounded-md" />
+        <Button
+          label="Run"
+          icon={Play}
+          className="rounded-md"
+          onClick={onRun}
+        />
 
         <ProfileButton />
       </div>

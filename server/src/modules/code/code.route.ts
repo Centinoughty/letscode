@@ -37,4 +37,12 @@ router.delete(
   CodeController.deleteCode,
 );
 
+router.post(
+  "/:codeId/run",
+  requireAuth,
+  validate(CodeSchema.CodeParams, "params"),
+  validate(CodeSchema.RunBody),
+  CodeController.executeCode,
+);
+
 export default router;

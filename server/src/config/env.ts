@@ -21,6 +21,8 @@ const envSchema = z.object({
 
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+
+  RUNNER_API_URL: z.url(),
 });
 
 export const env = envSchema.parse(process.env);
