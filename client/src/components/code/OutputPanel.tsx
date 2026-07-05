@@ -42,7 +42,7 @@ export default function OutputPanel({
                 {output.map((item, idx) => (
                   <pre
                     key={idx}
-                    className="h-full whitespace-pre-wrap rounded-md border border-gray-200 bg-zinc-50 p-3 text-sm text-zinc-700"
+                    className="whitespace-pre-wrap rounded-md border border-gray-200 bg-zinc-50 p-3 text-sm text-zinc-700"
                   >
                     {typeof item === "string"
                       ? item
@@ -51,7 +51,7 @@ export default function OutputPanel({
                 ))}
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center rounded-md border border-gray-200 bg-zinc-50 text-sm text-zinc-500">
+              <div className="flex items-center justify-center rounded-md border border-gray-200 bg-zinc-50 text-sm text-zinc-500">
                 Output will appear here after code execution.
               </div>
             )}

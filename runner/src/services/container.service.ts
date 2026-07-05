@@ -6,7 +6,7 @@ export async function createContainer(req: Request, res: Response) {
     const { language, codeId, stdin } = req.body;
     console.log(stdin);
 
-    const result = await containerManager.create(language, codeId);
+    const result = await containerManager.create(language, codeId, stdin);
 
     return res.status(200).json({ message: "Execution completed", ...result });
   } catch (error) {

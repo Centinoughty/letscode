@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { spawn } from "child_process";
 import { PassThrough } from "stream";
 import docker from "./docker";
@@ -7,47 +8,59 @@ import docker from "./docker";
 interface LanguageConfig {
   ext: string;
   image: string;
-  command: (filePath: string) => string;
+  command: (filePath: string, inputPath: string) => string;
 }
 
 const LANGUAGE_CONFIG: Record<string, LanguageConfig> = {
   python: {
     ext: "py",
     image: "python:3.11-alpine",
-    command: (file) => `python ${file}`,
+    command: (file, inputPath) => `python ${file} < ${inputPath}`,
   },
   cpp: {
     ext: "cpp",
     image: "gcc:13",
-    command: (file) => `g++ ${file} -o /tmp/a.out && /tmp/a.out`,
+    command: (file, inputPath) =>
+      `g++ ${file} -o /tmp/a.out && /tmp/a.out < ${inputPath}`,
   },
 };
 
 const CODE_DIR = "/shared/code";
 const CONTAINER_DIR = "/tmp";
 
-function createTarStream(filePath: string) {
-  const dir = path.dirname(filePath);
-  const base = path.basename(filePath);
+function createTarStream(files: string[]) {
+  const dir = path.dirname(files[0]);
+  const bases = files.map((file) => path.basename(file));
 
-  return spawn("tar", ["-cf", "-", "-C", dir, base]);
+  return spawn("tar", ["-cf", "-", "-C", dir, ...bases]);
 }
 
-export async function create(language: string, codeId: string) {
+export async function create(
+  language: string,
+  codeId: string,
+  stdin: string = "",
+) {
   const config = LANGUAGE_CONFIG[language];
   if (!config) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
   const fileName = `${codeId}.${config.ext}`;
+  const inputFileName = `${crypto.randomUUID()}.txt`;
+
   const hostFilePath = path.join(CODE_DIR, fileName);
+  const hostInputPath = path.join(CODE_DIR, inputFileName);
+
   const containerFilePath = `${CONTAINER_DIR}/${fileName}`;
+  const containerInputPath = `${CONTAINER_DIR}/${inputFileName}`;
 
   if (!fs.existsSync(hostFilePath)) {
     throw new Error(`Code file not found: ${hostFilePath}`);
   }
 
-  const cmd = config.command(containerFilePath);
+  fs.writeFileSync(hostInputPath, stdin, "utf-8");
+
+  const cmd = config.command(containerFilePath, containerInputPath);
 
   const container = await docker.createContainer({
     Image: config.image,
@@ -66,7 +79,7 @@ export async function create(language: string, codeId: string) {
   });
 
   try {
-    const tar = createTarStream(hostFilePath);
+    const tar = createTarStream([hostFilePath, hostInputPath]);
     if (!tar.stdout) {
       throw new Error("Failed to create tar output stream");
     }
@@ -135,6 +148,10 @@ export async function create(language: string, codeId: string) {
     console.error("Container execution failed:", err);
     throw err;
   } finally {
+    if (fs.existsSync(hostInputPath)) {
+      fs.unlinkSync(hostInputPath);
+    }
+
     console.log("done");
   }
 }
