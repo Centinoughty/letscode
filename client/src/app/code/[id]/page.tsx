@@ -113,6 +113,8 @@ export default function CodeEditorPage() {
               return;
             }
 
+            setRunOutput([]);
+
             const result = await runCode(codeId, input);
             const output: string[] = [];
 

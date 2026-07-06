@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Search, Settings } from "lucide-react";
+import { Bell, Plus, Search, Settings } from "lucide-react";
 import Input from "./Input";
 import Button from "./Button";
 import CodeModal from "../modal/CodeModal";
@@ -26,13 +26,15 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <Button
             onClick={() => setIsCodeOpen(true)}
-            label="+ Code"
+            label="Code"
+            icon={Plus}
             className="rounded-sm"
           />
 
           <Button
             onClick={() => setIsWorkspaceOpen(true)}
-            label="+ Workspace"
+            label="Workspace"
+            icon={Plus}
             className="rounded-sm"
           />
 

@@ -78,6 +78,9 @@ export default function MonacoEditor({
           minimap: { enabled: false },
           fontSize: 14,
           lineHeight: 22,
+          stickyScroll: {
+            enabled: false,
+          },
           smoothScrolling: true,
           scrollBeyondLastLine: true,
           automaticLayout: true,
