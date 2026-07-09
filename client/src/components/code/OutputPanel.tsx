@@ -51,7 +51,7 @@ export default function OutputPanel({
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center rounded-md border border-gray-200 bg-zinc-50 text-sm text-zinc-500">
+              <div className="flex p-3 items-center justify-center rounded-md border border-gray-200 bg-zinc-50 text-sm text-zinc-500">
                 Output will appear here after code execution.
               </div>
             )}

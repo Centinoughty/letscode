@@ -52,7 +52,9 @@ export default function Sidebar() {
       >
         <div>
           <div className="mb-8 px-2">
-            <h1 className="text-xl font-semibold text-primary">letscode</h1>
+            <Link href={"/"} className="text-xl font-semibold text-primary">
+              letscode
+            </Link>
           </div>
 
           <p className="px-2 mb-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
