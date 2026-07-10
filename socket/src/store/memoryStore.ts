@@ -19,7 +19,7 @@ export class MemoryStore {
     this.rooms.delete(roomId);
   }
 
-  public hasRoom(roomId: string): void {
-    this.rooms.has(roomId);
+  public hasRoom(roomId: string): boolean {
+    return this.rooms.has(roomId);
   }
 }

@@ -121,7 +121,9 @@ export class RoomManager {
     let transformed = operation;
 
     const missingOps = room.document.history.filter(
-      (historyOp) => historyOp.revision >= operation.revision,
+      (historyOp) =>
+        historyOp.revision >= operation.revision &&
+        historyOp.userId !== operation.userId,
     );
 
     for (const prevOp of missingOps) {

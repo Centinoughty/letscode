@@ -16,7 +16,6 @@ declare module "socket.io" {
 
 export function socketAuth(socket: Socket, next: (err?: Error) => void) {
   try {
-    console.log("hkfbg");
     const rawCookie = socket.handshake.headers.cookie;
     if (!rawCookie) {
       return next(new Error("Unauthorized"));

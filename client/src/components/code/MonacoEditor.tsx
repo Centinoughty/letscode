@@ -50,9 +50,11 @@ export default function MonacoEditor({
     const handleInitialCode = ({
       roomId: incomingRoomId,
       code,
+      revision,
     }: {
       roomId: string;
       code: string;
+      revision: number;
     }) => {
       if (incomingRoomId !== roomId) {
         return;
@@ -60,7 +62,7 @@ export default function MonacoEditor({
 
       setValue(code);
 
-      revisionRef.current = 0;
+      revisionRef.current = revision;
 
       onChange?.(code);
     };

@@ -26,6 +26,7 @@ export function roomHandler(
       socket.emit("code:update", {
         roomId,
         code: codeToSync,
+        revision: room.document.revision,
       });
 
       io.to(roomId).emit("room:user_join", {
