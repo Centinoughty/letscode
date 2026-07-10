@@ -1,8 +1,8 @@
 import { Operation } from "@/lib/ot/operation";
 import { transformPendingQueue } from "@/lib/ot/transformPendingQueue";
-import { Editor, OnChange } from "@monaco-editor/react";
+import { Editor } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 
 interface CodeEnvirmentProps {
@@ -30,20 +30,6 @@ export default function MonacoEditor({
   const revisionRef = useRef(0);
   const applyingRemoteRef = useRef(false);
 
-  const [value, setValue] = useState(initialValue);
-
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  const handleChange: OnChange = (nextValue) => {
-    const updatedValue = nextValue ?? "";
-
-    setValue(updatedValue);
-
-    onChange?.(updatedValue);
-  };
-
   useEffect(() => {
     if (!socket || !roomId) return;
 
@@ -60,19 +46,31 @@ export default function MonacoEditor({
         return;
       }
 
-      setValue(code);
+      const editor = editorRef.current;
+
+      if (!editor) {
+        return;
+      }
+
+      const model = editor.getModel();
+
+      if (!model) {
+        return;
+      }
+
+      applyingRemoteRef.current = true;
+
+      model.setValue(code);
+
+      applyingRemoteRef.current = false;
 
       revisionRef.current = revision;
-
-      onChange?.(code);
     };
 
     socket.on("code:update", handleInitialCode);
 
     const handleOperation = (remoteOperation: Operation) => {
-      if (remoteOperation.userId === socket.id) {
-        return;
-      }
+      console.log("remote op: ", remoteOperation);
 
       const transformedRemote = transformPendingQueue(
         remoteOperation,
@@ -149,12 +147,6 @@ export default function MonacoEditor({
       }
 
       revisionRef.current = operation.revision;
-
-      const currentValue = editor.getValue();
-
-      setValue(currentValue);
-
-      onChange?.(currentValue);
     } finally {
       applyingRemoteRef.current = false;
     }
@@ -165,8 +157,7 @@ export default function MonacoEditor({
       <Editor
         height={height}
         language={language}
-        value={value}
-        onChange={handleChange}
+        defaultValue={initialValue}
         theme="vs-dark"
         options={{
           minimap: { enabled: false },
@@ -210,6 +201,7 @@ export default function MonacoEditor({
                 pendingOpRef.current.push(operation);
 
                 socket.emit("operation", operation);
+                console.log("operation emit: ", operation);
 
                 continue;
               }
@@ -267,10 +259,6 @@ export default function MonacoEditor({
                 socket.emit("operation", insertOp);
               }
             }
-
-            setValue(editor.getValue());
-
-            onChange?.(editor.getValue());
           });
         }}
       />
