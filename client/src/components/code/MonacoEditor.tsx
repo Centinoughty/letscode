@@ -23,12 +23,27 @@ export default function MonacoEditor({
   language,
   height = "100%",
   readOnly = false,
-  onChange,
 }: CodeEnvirmentProps) {
+  const socketRef = useRef<Socket | null>(null);
+  const roomIdRef = useRef<string | undefined>(roomId);
+
+  const pendingInitialCodeRef = useRef<{
+    code: string;
+    revision: number;
+  } | null>(null);
+
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const pendingOpRef = useRef<Operation[]>([]);
   const revisionRef = useRef(0);
   const applyingRemoteRef = useRef(false);
+
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+
+  useEffect(() => {
+    roomIdRef.current = roomId;
+  }, [roomId]);
 
   useEffect(() => {
     if (!socket || !roomId) return;
@@ -42,36 +57,32 @@ export default function MonacoEditor({
       code: string;
       revision: number;
     }) => {
-      if (incomingRoomId !== roomId) {
-        return;
-      }
+      if (incomingRoomId !== roomId) return;
 
       const editor = editorRef.current;
 
       if (!editor) {
+        pendingInitialCodeRef.current = {
+          code,
+          revision,
+        };
+
         return;
       }
 
       const model = editor.getModel();
 
-      if (!model) {
-        return;
-      }
+      if (!model) return;
 
       applyingRemoteRef.current = true;
-
       model.setValue(code);
-
       applyingRemoteRef.current = false;
-
       revisionRef.current = revision;
     };
 
     socket.on("code:update", handleInitialCode);
 
     const handleOperation = (remoteOperation: Operation) => {
-      console.log("remote op: ", remoteOperation);
-
       const transformedRemote = transformPendingQueue(
         remoteOperation,
         pendingOpRef.current,
@@ -176,21 +187,36 @@ export default function MonacoEditor({
         }}
         onMount={(editor: monaco.editor.IStandaloneCodeEditor) => {
           editorRef.current = editor;
+
+          const pending = pendingInitialCodeRef.current;
+
+          if (pending) {
+            applyingRemoteRef.current = true;
+
+            editor.getModel()?.setValue(pending.code);
+
+            applyingRemoteRef.current = false;
+            revisionRef.current = pending.revision;
+            pendingInitialCodeRef.current = null;
+          }
+
           editor.onDidChangeModelContent((event) => {
-            if (applyingRemoteRef.current || !socket || !roomId) {
+            const currentSocket = socketRef.current;
+            const currentRoomId = roomIdRef.current;
+
+            if (applyingRemoteRef.current || !currentSocket || !currentRoomId) {
               return;
             }
 
             for (const change of event.changes) {
               const operationId = crypto.randomUUID();
 
-              // Insert
-
+              // Insert operation
               if (change.rangeLength === 0 && change.text.length > 0) {
                 const operation: Operation = {
                   id: operationId,
-                  roomId,
-                  userId: socket.id!,
+                  roomId: currentRoomId,
+                  userId: currentSocket.id!,
                   revision: revisionRef.current,
                   timestamp: Date.now(),
                   type: "insert",
@@ -199,20 +225,17 @@ export default function MonacoEditor({
                 };
 
                 pendingOpRef.current.push(operation);
-
-                socket.emit("operation", operation);
-                console.log("operation emit: ", operation);
+                currentSocket.emit("operation", operation);
 
                 continue;
               }
 
-              // Delete
-
+              // Delete operation
               if (change.rangeLength > 0 && change.text === "") {
                 const operation: Operation = {
                   id: operationId,
-                  roomId,
-                  userId: socket.id!,
+                  roomId: currentRoomId,
+                  userId: currentSocket.id!,
                   revision: revisionRef.current,
                   timestamp: Date.now(),
                   type: "delete",
@@ -221,19 +244,17 @@ export default function MonacoEditor({
                 };
 
                 pendingOpRef.current.push(operation);
-
-                socket.emit("operation", operation);
+                currentSocket.emit("operation", operation);
 
                 continue;
               }
 
-              // Replace
-
+              // Replace operation
               if (change.rangeLength > 0 && change.text.length > 0) {
                 const deleteOp: Operation = {
                   id: crypto.randomUUID(),
-                  roomId,
-                  userId: socket.id!,
+                  roomId: currentRoomId,
+                  userId: currentSocket.id!,
                   revision: revisionRef.current,
                   timestamp: Date.now(),
                   type: "delete",
@@ -243,8 +264,8 @@ export default function MonacoEditor({
 
                 const insertOp: Operation = {
                   id: crypto.randomUUID(),
-                  roomId,
-                  userId: socket.id!,
+                  roomId: currentRoomId,
+                  userId: currentSocket.id!,
                   revision: revisionRef.current,
                   timestamp: Date.now(),
                   type: "insert",
@@ -254,9 +275,8 @@ export default function MonacoEditor({
 
                 pendingOpRef.current.push(deleteOp, insertOp);
 
-                socket.emit("operation", deleteOp);
-
-                socket.emit("operation", insertOp);
+                currentSocket.emit("operation", deleteOp);
+                currentSocket.emit("operation", insertOp);
               }
             }
           });

@@ -43,13 +43,13 @@ export default function CodeEditorPage() {
     };
 
     // If socket already connected, join immediately; otherwise wait for connect
+    setSocketInst(socket);
+
     if (socket.connected) {
       joinRoom();
     } else {
       socket.on("connect", joinRoom);
     }
-
-    setSocketInst(socket);
 
     return () => {
       socket.off("connect", joinRoom);
