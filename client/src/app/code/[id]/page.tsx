@@ -117,7 +117,7 @@ export default function CodeEditorPage() {
             }
 
             const code = editorRef.current?.getCode();
-            if (!code) return;
+            if (code === undefined) return;
 
             setRunOutput([]);
 

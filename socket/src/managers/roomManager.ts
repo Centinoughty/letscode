@@ -31,6 +31,7 @@ export class RoomManager {
         content: "",
         revision: 0,
         history: [],
+        hydrated: false,
       },
     };
 
@@ -81,12 +82,14 @@ export class RoomManager {
 
     room.users.set(user.socketId, user);
 
-    if (room.document.content === "") {
+    if (!room.document.hydrated) {
       room.document.content = await this.ensureCodeFile(
         roomId,
         room.language,
         room.document.content,
       );
+
+      room.document.hydrated = true;
     } else {
       await this.ensureCodeFile(roomId, room.language, room.document.content);
     }

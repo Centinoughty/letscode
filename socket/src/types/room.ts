@@ -13,6 +13,7 @@ export interface Document {
   content: string;
   revision: number;
   history: Operation[];
+  hydrated: boolean;
 }
 
 export interface Room {
