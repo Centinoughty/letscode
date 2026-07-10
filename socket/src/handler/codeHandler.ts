@@ -8,15 +8,15 @@ export function codeHandler(
   roomManager: RoomManager,
 ) {
   socket.on("operation", (operation: Operation) => {
-    const room = roomManager.applyOperation(operation);
+    const result = roomManager.applyOperation(operation);
 
-    if (!room) return;
+    if (!result) return;
 
-    socket.to(operation.roomId).emit("operation", operation);
+    socket.to(operation.roomId).emit("operation", result.operation);
 
     socket.emit("operation:ack", {
       id: operation.id,
-      revision: room.document.revision,
+      revision: result.room.document.revision,
     });
   });
 }

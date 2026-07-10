@@ -47,6 +47,26 @@ export default function MonacoEditor({
   useEffect(() => {
     if (!socket || !roomId) return;
 
+    const handleInitialCode = ({
+      roomId: incomingRoomId,
+      code,
+    }: {
+      roomId: string;
+      code: string;
+    }) => {
+      if (incomingRoomId !== roomId) {
+        return;
+      }
+
+      setValue(code);
+
+      revisionRef.current = 0;
+
+      onChange?.(code);
+    };
+
+    socket.on("code:update", handleInitialCode);
+
     const handleOperation = (remoteOperation: Operation) => {
       if (remoteOperation.userId === socket.id) {
         return;
@@ -74,6 +94,7 @@ export default function MonacoEditor({
     socket.on("operation:ack", handleAck);
 
     return () => {
+      socket.off("code:update", handleInitialCode);
       socket.off("operation", handleOperation);
       socket.off("operation:ack", handleAck);
     };
@@ -244,6 +265,10 @@ export default function MonacoEditor({
                 socket.emit("operation", insertOp);
               }
             }
+
+            setValue(editor.getValue());
+
+            onChange?.(editor.getValue());
           });
         }}
       />

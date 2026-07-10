@@ -112,7 +112,9 @@ export class RoomManager {
     }
   }
 
-  public applyOperation(operation: Operation): Room | undefined {
+  public applyOperation(
+    operation: Operation,
+  ): { room: Room; operation: Operation } | undefined {
     const room = this.store.getRoom(operation.roomId);
     if (!room) return;
 
@@ -136,5 +138,7 @@ export class RoomManager {
     if (room.document.history.length > 500) {
       room.document.history.shift();
     }
+
+    return { room, operation: transformed };
   }
 }
