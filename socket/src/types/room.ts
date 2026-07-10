@@ -1,3 +1,5 @@
+import { Operation } from "./operation";
+
 export interface User {
   socketId: string;
   name: string;
@@ -7,9 +9,16 @@ export interface User {
 
 export type Language = "CPP" | "JAVASCRIPT" | "PYTHON" | "TYPESCRIPT";
 
+export interface Document {
+  content: string;
+  revision: number;
+  history: Operation[];
+}
+
 export interface Room {
   roomId: string;
   language: Language;
   users: Map<string, User>;
-  code: string;
+
+  document: Document;
 }

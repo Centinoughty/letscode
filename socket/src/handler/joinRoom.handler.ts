@@ -21,7 +21,7 @@ export function roomHandler(
         avatar: socket.user.avatar,
       });
 
-      const codeToSync = room.code;
+      const codeToSync = room.document.content;
 
       socket.emit("code:update", {
         roomId,

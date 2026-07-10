@@ -2,6 +2,9 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { MemoryStore } from "../store/memoryStore";
 import { Language, Room, User } from "../types/room";
+import { Operation } from "../types/operation";
+import { transform } from "../ot/transform";
+import { applyOp } from "../ot/apply";
 
 const uploadsDir = "/shared/code";
 
@@ -24,7 +27,11 @@ export class RoomManager {
       roomId,
       users: new Map(),
       language,
-      code: "",
+      document: {
+        content: "",
+        revision: 0,
+        history: [],
+      },
     };
 
     this.store.setRoom(roomId, room);
@@ -74,10 +81,14 @@ export class RoomManager {
 
     room.users.set(user.socketId, user);
 
-    if (room.code === "") {
-      room.code = await this.ensureCodeFile(roomId, room.language, room.code);
+    if (room.document.content === "") {
+      room.document.content = await this.ensureCodeFile(
+        roomId,
+        room.language,
+        room.document.content,
+      );
     } else {
-      await this.ensureCodeFile(roomId, room.language, room.code);
+      await this.ensureCodeFile(roomId, room.language, room.document.content);
     }
 
     return room;
@@ -93,7 +104,7 @@ export class RoomManager {
     if (room.users.size === 0) {
       await writeFile(
         this.resolveCodeFilePath(roomId, room.language),
-        room.code,
+        room.document.content,
         "utf8",
       );
 
@@ -101,13 +112,29 @@ export class RoomManager {
     }
   }
 
-  public updateCode(roomId: string, newCode: string): Room | undefined {
-    const room = this.store.getRoom(roomId);
-
+  public applyOperation(operation: Operation): Room | undefined {
+    const room = this.store.getRoom(operation.roomId);
     if (!room) return;
 
-    room.code = newCode;
+    let transformed = operation;
 
-    return room;
+    const missingOps = room.document.history.filter(
+      (historyOp) => historyOp.revision >= operation.revision,
+    );
+
+    for (const prevOp of missingOps) {
+      transformed = transform(transformed, prevOp);
+    }
+
+    room.document.content = applyOp(room.document.content, transformed);
+    room.document.revision++;
+
+    transformed.revision = room.document.revision;
+
+    room.document.history.push(transformed);
+
+    if (room.document.history.length > 500) {
+      room.document.history.shift();
+    }
   }
 }

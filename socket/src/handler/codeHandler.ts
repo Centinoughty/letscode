@@ -1,28 +1,22 @@
 import { Server, Socket } from "socket.io";
 import { RoomManager } from "../managers/roomManager";
+import { Operation } from "../types/operation";
 
 export function codeHandler(
   io: Server,
   socket: Socket,
   roomManager: RoomManager,
 ) {
-  socket.on(
-    "code:update",
-    ({ roomId, code }: { roomId: string; code: string }) => {
-      const room = roomManager.getRoom(roomId);
+  socket.on("operation", (operation: Operation) => {
+    const room = roomManager.applyOperation(operation);
 
-      if (!room) return;
+    if (!room) return;
 
-      const user = room.users.get(socket.id);
+    socket.to(operation.roomId).emit("operation", operation);
 
-      if (!user) return;
-
-      roomManager.updateCode(roomId, code);
-
-      socket.to(roomId).emit("code:update", {
-        roomId,
-        code,
-      });
-    },
-  );
+    socket.emit("operation:ack", {
+      id: operation.id,
+      revision: room.document.revision,
+    });
+  });
 }
