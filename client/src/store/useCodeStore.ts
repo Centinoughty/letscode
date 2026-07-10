@@ -47,7 +47,6 @@ export const useCodeStore = create<CodeState>((set) => ({
     try {
       const { data: codeRes, status } = await api.get("/code");
 
-      console.log(codeRes);
       if (status === 200) {
         set({
           codes: codeRes.codes,
@@ -65,8 +64,6 @@ export const useCodeStore = create<CodeState>((set) => ({
 
     try {
       const { data } = await api.get(`/code/${codeId}`);
-
-      console.log(data);
 
       set({ isLoading: false });
       return data.code;

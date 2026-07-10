@@ -13,9 +13,7 @@ export function getSocket(): Socket {
       reconnectionDelay: 1000,
     });
 
-    socket.on("connect", () => {
-      console.log("Connected:", socket?.id);
-    });
+    socket.on("connect", () => {});
   }
 
   return socket;
