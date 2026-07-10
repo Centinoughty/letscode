@@ -17,7 +17,8 @@ export const EditCodeBody = z.object({
 });
 
 export const RunBody = z.object({
-  stdin: z.string(),
+  code: z.string(),
+  stdin: z.string().optional(),
 });
 
 export type CreateCodeBody = z.infer<typeof CreateCodeBody>;

@@ -3,10 +3,9 @@ import * as containerManager from "../lib/container";
 
 export async function createContainer(req: Request, res: Response) {
   try {
-    const { language, codeId, stdin } = req.body;
-    console.log(stdin);
+    const { language, codeId, code, stdin } = req.body;
 
-    const result = await containerManager.create(language, codeId, stdin);
+    const result = await containerManager.create(language, codeId, code, stdin);
 
     return res.status(200).json({ message: "Execution completed", ...result });
   } catch (error) {

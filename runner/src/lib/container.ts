@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import os from "os";
 import { spawn } from "child_process";
 import { PassThrough } from "stream";
 import docker from "./docker";
@@ -25,39 +24,41 @@ const LANGUAGE_CONFIG: Record<string, LanguageConfig> = {
   },
 };
 
-const CODE_DIR = "/shared/code";
+const CODE_DIR = "/tmp";
 const CONTAINER_DIR = "/tmp";
 
-function createTarStream(files: string[]) {
-  const dir = path.dirname(files[0]);
-  const bases = files.map((file) => path.basename(file));
-
-  return spawn("tar", ["-cf", "-", "-C", dir, ...bases]);
+function createTarStream(workingDir: string, files: string[]) {
+  return spawn("tar", ["-cf", "-", "-C", workingDir, ...files]);
 }
 
 export async function create(
   language: string,
   codeId: string,
+  code: string,
   stdin: string = "",
 ) {
+  const tempId = crypto.randomUUID();
+  const workingDir = path.join(CODE_DIR, tempId);
+
+  fs.mkdirSync(workingDir, {
+    recursive: true,
+  });
+
   const config = LANGUAGE_CONFIG[language];
   if (!config) {
     throw new Error(`Unsupported language: ${language}`);
   }
 
   const fileName = `${codeId}.${config.ext}`;
-  const inputFileName = `${crypto.randomUUID()}.txt`;
+  const inputFileName = `${codeId}-stdin.txt`;
 
-  const hostFilePath = path.join(CODE_DIR, fileName);
-  const hostInputPath = path.join(CODE_DIR, inputFileName);
+  const hostFilePath = path.join(workingDir, fileName);
+  const hostInputPath = path.join(workingDir, inputFileName);
 
   const containerFilePath = `${CONTAINER_DIR}/${fileName}`;
   const containerInputPath = `${CONTAINER_DIR}/${inputFileName}`;
 
-  if (!fs.existsSync(hostFilePath)) {
-    throw new Error(`Code file not found: ${hostFilePath}`);
-  }
-
+  fs.writeFileSync(hostFilePath, code, "utf-8");
   fs.writeFileSync(hostInputPath, stdin, "utf-8");
 
   const cmd = config.command(containerFilePath, containerInputPath);
@@ -79,7 +80,7 @@ export async function create(
   });
 
   try {
-    const tar = createTarStream([hostFilePath, hostInputPath]);
+    const tar = createTarStream(workingDir, [fileName, inputFileName]);
     if (!tar.stdout) {
       throw new Error("Failed to create tar output stream");
     }
@@ -148,10 +149,13 @@ export async function create(
     console.error("Container execution failed:", err);
     throw err;
   } finally {
-    if (fs.existsSync(hostInputPath)) {
-      fs.unlinkSync(hostInputPath);
+    try {
+      fs.rmSync(path.join(CODE_DIR, tempId), {
+        recursive: true,
+        force: true,
+      });
+    } catch (e) {
+      console.error("Cleanup failed:", e);
     }
-
-    console.log("done");
   }
 }

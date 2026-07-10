@@ -2,13 +2,15 @@
 
 import ChatSidebar from "@/components/code/ChatSidebar";
 import EditorHeader from "@/components/code/EditorHeader";
-import MonacoEditor from "@/components/code/MonacoEditor";
+import MonacoEditor, {
+  MonacoEditorHandle,
+} from "@/components/code/MonacoEditor";
 import OutputPanel from "@/components/code/OutputPanel";
 import { getSocket } from "@/lib/socket";
 import { useCodeStore } from "@/store/useCodeStore";
 import { poppins } from "@/styles/font";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 
 export default function CodeEditorPage() {
@@ -26,6 +28,7 @@ export default function CodeEditorPage() {
   const [runOutput, setRunOutput] = useState<string[]>([]);
 
   const [socketInst, setSocketInst] = useState<Socket | null>(null);
+  const editorRef = useRef<MonacoEditorHandle>(null);
 
   // socket instance init
   useEffect(() => {
@@ -113,9 +116,12 @@ export default function CodeEditorPage() {
               return;
             }
 
+            const code = editorRef.current?.getCode();
+            if (!code) return;
+
             setRunOutput([]);
 
-            const result = await runCode(codeId, input);
+            const result = await runCode(codeId, code, input);
             const output: string[] = [];
 
             if (result.stdout) output.push(result.stdout);
@@ -128,6 +134,7 @@ export default function CodeEditorPage() {
         <div className="grid overflow-hidden grid-cols-[1fr_360px]">
           <div className="p-2 overflow-hidden">
             <MonacoEditor
+              ref={editorRef}
               socket={socketInst}
               roomId={codeId}
               initialValue={content}

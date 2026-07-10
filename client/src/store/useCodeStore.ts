@@ -25,6 +25,7 @@ interface CodeState {
   deleteCode: (codeId: string) => Promise<void>;
   runCode: (
     codeId: string,
+    code: string,
     stdin: string,
   ) => Promise<{ stdout: string; stderr: string }>;
 }
@@ -137,10 +138,11 @@ export const useCodeStore = create<CodeState>((set) => ({
     }
   },
 
-  runCode: async (codeId: string, stdin: string) => {
+  runCode: async (codeId: string, code: string, stdin: string) => {
     try {
       const { data, status } = await api.post(`/code/${codeId}/run`, {
         stdin,
+        code,
       });
 
       if (status === 200) {

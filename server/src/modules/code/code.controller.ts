@@ -240,7 +240,7 @@ export async function executeCode(
   try {
     // get data from request
     const { codeId } = req.params;
-    const { stdin } = req.body;
+    const { code: codeBody, stdin } = req.body;
     const { id: userId } = req.user!;
 
     // find code
@@ -270,6 +270,7 @@ export async function executeCode(
       body: JSON.stringify({
         language: code.language.toLowerCase(),
         codeId: code.id,
+        code: codeBody,
         stdin: stdin,
       }),
     });
