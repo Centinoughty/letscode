@@ -203,7 +203,7 @@ const MonacoEditor = forwardRef<MonacoEditorHandle, CodeEnvirmentProps>(
             scrollBeyondLastLine: true,
             automaticLayout: true,
             readOnly,
-            padding: { top: 16, bottom: 16 },
+            padding: { top: 10, bottom: 16 },
             renderWhitespace: "selection",
             wordWrap: "off",
           }}

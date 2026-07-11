@@ -13,11 +13,21 @@ import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 
+export interface User {
+  socketId: string;
+  name: string;
+  avatar?: string;
+}
+
 export default function CodeEditorPage() {
   const params = useParams<{ id: string }>();
   const codeId = params.id;
 
-  const { getCode, editCode, runCode } = useCodeStore();
+  const { codes, getCode, editCode, runCode } = useCodeStore();
+  const code = codes.find((c) => c.id === codeId);
+  const collaborators = code?.collaborators ?? [];
+
+  const [users, setUsers] = useState<User[]>([]);
 
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
@@ -35,6 +45,27 @@ export default function CodeEditorPage() {
     if (!codeId || !isCodeLoaded || !language) return;
 
     const socket = getSocket();
+    setSocketInst(socket);
+
+    const handleRoomUsers = ({ users }: { users: User[] }) => {
+      setUsers(users);
+    };
+
+    const handleUserJoin = (user: User) => {
+      setUsers((prev) => {
+        const exists = prev.some((u) => u.socketId === user.socketId);
+
+        if (exists) {
+          return prev;
+        }
+
+        return [...prev, user];
+      });
+    };
+
+    const handleUserLeave = ({ socketId }: { socketId: string }) => {
+      setUsers((prev) => prev.filter((user) => user.socketId !== socketId));
+    };
 
     const joinRoom = () => {
       if (codeId) {
@@ -45,9 +76,11 @@ export default function CodeEditorPage() {
       }
     };
 
-    // If socket already connected, join immediately; otherwise wait for connect
-    setSocketInst(socket);
+    socket.on("room:users", handleRoomUsers);
+    socket.on("room:user_join", handleUserJoin);
+    socket.on("room:user_leave", handleUserLeave);
 
+    // If socket already connected, join immediately; otherwise wait for connect
     if (socket.connected) {
       joinRoom();
     } else {
@@ -56,6 +89,10 @@ export default function CodeEditorPage() {
 
     return () => {
       socket.off("connect", joinRoom);
+
+      socket.off("room:users", handleRoomUsers);
+      socket.off("room:user_join", handleUserJoin);
+      socket.off("room:user_leave", handleUserLeave);
 
       // prefer leaving the room instead of disconnecting the shared socket
       try {
@@ -99,9 +136,11 @@ export default function CodeEditorPage() {
         className={`h-dvh ${poppins.className} grid grid-rows-[56px_1fr_300px]`}
       >
         <EditorHeader
+          codeId={codeId}
           name={name}
           language={language}
           onChange={(e) => setName(e.target.value)}
+          users={collaborators}
           onBlur={() => {
             const codeId = params.id;
 

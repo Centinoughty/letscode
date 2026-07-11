@@ -29,9 +29,14 @@ export function roomHandler(
         revision: room.document.revision,
       });
 
-      io.to(roomId).emit("room:user_join", {
+      socket.emit("room:users", {
+        users: Array.from(room.users.values()),
+      });
+
+      socket.to(roomId).emit("room:user_join", {
         socketId: socket.id,
         name: socket.user.name,
+        avatar: socket.user.avatar,
       });
     },
   );

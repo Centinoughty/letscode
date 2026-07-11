@@ -5,6 +5,14 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+
+  activeFile?: string;
+
+  cursor?: {
+    position: number;
+    selectionStart?: number;
+    selectionEnd?: number;
+  };
 }
 
 export type Language = "CPP" | "JAVASCRIPT" | "PYTHON" | "TYPESCRIPT";

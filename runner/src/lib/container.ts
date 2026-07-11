@@ -35,7 +35,14 @@ const LANGUAGE_CONFIG: Record<string, LanguageConfig> = {
   java: {
     ext: "java",
     image: "eclipse-temurin:17-jdk-alpine",
-    command: (file, inputPath) => `java ${file} < ${inputPath}`,
+    command: (file, inputPath) => {
+      const className = path.basename(file, ".java");
+
+      return `
+      javac ${file} &&
+      java -cp /tmp ${className} < ${inputPath}
+    `;
+    },
   },
 };
 

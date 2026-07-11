@@ -5,6 +5,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   className?: string;
   icon?: LucideIcon;
+  iconClass?: string;
 }
 
 export default function Button({
@@ -12,6 +13,7 @@ export default function Button({
   className,
   type = "button",
   icon: Icon,
+  iconClass,
   ...props
 }: ButtonProps) {
   return (
@@ -21,7 +23,7 @@ export default function Button({
         className={`p-2 flex items-center justify-center gap-2 bg-primary outline-none text-neutral disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed ${className}`}
         {...props}
       >
-        {Icon && <Icon size={18} />}
+        {Icon && <Icon className={iconClass} size={18} />}
 
         {label}
       </button>
