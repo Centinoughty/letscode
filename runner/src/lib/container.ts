@@ -22,6 +22,21 @@ const LANGUAGE_CONFIG: Record<string, LanguageConfig> = {
     command: (file, inputPath) =>
       `g++ ${file} -o /tmp/a.out && /tmp/a.out < ${inputPath}`,
   },
+  javascript: {
+    ext: "js",
+    image: "node:22-alpine",
+    command: (file, inputPath) => `node ${file} < ${inputPath}`,
+  },
+  typescript: {
+    ext: "ts",
+    image: "node:22-alpine",
+    command: (file, inputPath) => `npx tsx ${file} < ${inputPath}`,
+  },
+  java: {
+    ext: "java",
+    image: "eclipse-temurin:17-jdk-alpine",
+    command: (file, inputPath) => `java ${file} < ${inputPath}`,
+  },
 };
 
 const CODE_DIR = "/tmp";

@@ -28,9 +28,10 @@ export default function CodeModal({ isOpen, onClose }: ModalProps) {
 
   const languageOptions = [
     { label: "C++", value: "CPP" },
-    { label: "JavaScript", value: "JAVASCRIPT" },
     { label: "Python", value: "PYTHON" },
+    { label: "JavaScript", value: "JAVASCRIPT" },
     { label: "TypeScript", value: "TYPESCRIPT" },
+    { label: "Java", value: "JAVA" },
   ];
 
   return (
