@@ -5,10 +5,11 @@ import EditorHeader from "@/components/code/EditorHeader";
 import MonacoEditor, {
   MonacoEditorHandle,
 } from "@/components/code/MonacoEditor";
-import OutputPanel from "@/components/code/OutputPanel";
+import OutputPanel, { OutputItem } from "@/components/code/OutputPanel";
 import { getSocket } from "@/lib/socket";
 import { useCodeStore } from "@/store/useCodeStore";
 import { poppins } from "@/styles/font";
+import { Collaborator } from "@/types/Collaborator";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
@@ -23,19 +24,18 @@ export default function CodeEditorPage() {
   const params = useParams<{ id: string }>();
   const codeId = params.id;
 
-  const { codes, getCode, editCode, runCode } = useCodeStore();
-  const code = codes.find((c) => c.id === codeId);
-  const collaborators = code?.collaborators ?? [];
+  const { getCode, editCode, runCode } = useCodeStore();
 
   const [users, setUsers] = useState<User[]>([]);
 
   const [name, setName] = useState<string>("");
   const [language, setLanguage] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [isCodeLoaded, setIsCodeLoaded] = useState<boolean>(false);
 
   const [input, setInput] = useState<string>("");
-  const [runOutput, setRunOutput] = useState<string[]>([]);
+  const [runOutput, setRunOutput] = useState<OutputItem[]>([]);
 
   const [socketInst, setSocketInst] = useState<Socket | null>(null);
   const editorRef = useRef<MonacoEditorHandle>(null);
@@ -99,6 +99,7 @@ export default function CodeEditorPage() {
         if (codeId) socket.emit("room:leave", { roomId: codeId });
       } catch (e) {
         // ignore
+        console.log(e);
       }
 
       setSocketInst(null);
@@ -123,6 +124,7 @@ export default function CodeEditorPage() {
 
       setName(code.name);
       setLanguage(code.language.toLowerCase());
+      setCollaborators(code.collaborators);
       setContent(code.content || "");
       setIsCodeLoaded(true);
     }
@@ -161,10 +163,21 @@ export default function CodeEditorPage() {
             setRunOutput([]);
 
             const result = await runCode(codeId, code, input);
-            const output: string[] = [];
+            const output: OutputItem[] = [];
 
-            if (result.stdout) output.push(result.stdout);
-            if (result.stderr) output.push(result.stderr);
+            if (result.stdout) {
+              output.push({
+                type: "stdout",
+                content: result.stdout,
+              });
+            }
+
+            if (result.stderr) {
+              output.push({
+                type: "stderr",
+                content: result.stderr,
+              });
+            }
 
             setRunOutput(output);
           }}

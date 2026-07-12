@@ -14,6 +14,8 @@ interface Code {
 
 interface CodeState {
   codes: Code[];
+
+  hasFetched: boolean;
   isLoading: boolean;
   error: string | null;
 
@@ -32,13 +34,14 @@ interface CodeState {
 
 export const useCodeStore = create<CodeState>((set) => ({
   codes: [],
+  hasFetched: false,
   isLoading: false,
   error: null,
 
   fetchCodes: async () => {
-    const { isLoading } = useCodeStore.getState();
+    const { hasFetched, isLoading } = useCodeStore.getState();
 
-    if (isLoading) {
+    if (hasFetched || isLoading) {
       return;
     }
 
@@ -51,6 +54,7 @@ export const useCodeStore = create<CodeState>((set) => ({
         set({
           codes: codeRes.codes,
           isLoading: false,
+          hasFetched: true,
         });
       }
     } catch (error) {

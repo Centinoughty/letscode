@@ -1,9 +1,14 @@
 "use client";
 
+export interface OutputItem {
+  type: "stdout" | "stderr";
+  content: string;
+}
+
 interface OutputPanelProps {
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
-  output?: unknown[];
+  output?: OutputItem[];
 }
 
 export default function OutputPanel({
@@ -42,11 +47,15 @@ export default function OutputPanel({
                 {output.map((item, idx) => (
                   <pre
                     key={idx}
-                    className="whitespace-pre-wrap rounded-md border border-gray-200 bg-zinc-50 p-3 text-sm text-zinc-700"
+                    className={`whitespace-pre-wrap rounded-md border p-3 text-sm ${
+                      item.type === "stderr"
+                        ? "border-red-200 bg-red-50 text-red-700"
+                        : "border-gray-200 bg-zinc-50 text-zinc-700"
+                    }`}
                   >
-                    {typeof item === "string"
-                      ? item
-                      : JSON.stringify(item, null, 2)}
+                    {typeof item.content === "string"
+                      ? item.content
+                      : JSON.stringify(item.content, null, 2)}
                   </pre>
                 ))}
               </div>

@@ -12,6 +12,7 @@ interface Workspace {
 
 interface WorkspaceState {
   workspaces: Workspace[];
+  hasFetched: boolean;
   isLoading: boolean;
   error: string | null;
 
@@ -23,6 +24,7 @@ interface WorkspaceState {
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   workspaces: [],
+  hasFetched: false,
   isLoading: false,
   error: null,
 

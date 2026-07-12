@@ -6,20 +6,13 @@ import { useCodeStore } from "@/store/useCodeStore";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import { mont } from "@/styles/font";
 import { formatDate } from "@/util/formatDate";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { codes, fetchCodes, editCode, deleteCode } = useCodeStore();
-  const { workspaces, fetchWorkspaces, editWorkspace, deleteWorkspace } =
-    useWorkspaceStore();
+  const { codes, editCode, deleteCode } = useCodeStore();
+  const { workspaces, editWorkspace, deleteWorkspace } = useWorkspaceStore();
 
   const userEmail = user?.email;
-
-  useEffect(() => {
-    fetchCodes();
-    fetchWorkspaces();
-  }, [fetchCodes, fetchWorkspaces]);
 
   return (
     <>

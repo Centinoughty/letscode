@@ -103,11 +103,14 @@ export async function getCode(
       },
       include: {
         collaborators: {
-          where: {
-            userId,
-          },
-          select: {
-            id: true,
+          include: {
+            user: {
+              select: {
+                name: true,
+                avatar: true,
+                email: true,
+              },
+            },
           },
         },
       },

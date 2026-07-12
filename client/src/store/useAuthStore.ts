@@ -173,7 +173,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { data } = await api.patch("/user/me");
+      const { data } = await api.patch("/user/me", { name });
 
       set({
         user: data.user,

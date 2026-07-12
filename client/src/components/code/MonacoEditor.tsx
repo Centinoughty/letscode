@@ -312,5 +312,6 @@ const MonacoEditor = forwardRef<MonacoEditorHandle, CodeEnvirmentProps>(
     );
   },
 );
+MonacoEditor.displayName = "MonacoEditor";
 
 export default MonacoEditor;

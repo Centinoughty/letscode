@@ -12,7 +12,6 @@ import {
   Pencil,
   Trash2,
   User,
-  X,
 } from "lucide-react";
 
 import {
