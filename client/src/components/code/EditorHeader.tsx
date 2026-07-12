@@ -8,12 +8,14 @@ import Input from "../ui/Input";
 import Button from "../ui/Button";
 import CollaboratorModal from "../modal/CollaboratorModal";
 import { Collaborator } from "@/types/Collaborator";
+import { User } from "@/app/code/[id]/page";
 
 interface HeaderProps {
   codeId: string;
   name: string;
   language: string;
-  users: Collaborator[];
+  users: User[];
+  collaborators: Collaborator[];
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onBlur?: () => void;
   onRun?: () => void;
@@ -24,6 +26,7 @@ export default function EditorHeader({
   name,
   language,
   users,
+  collaborators,
   onChange,
   onBlur,
   onRun,
@@ -74,7 +77,7 @@ export default function EditorHeader({
 
       <CollaboratorModal
         codeId={codeId}
-        collaborators={users}
+        collaborators={collaborators}
         isOpen={isAddCollabOpen}
         setIsOpen={setIsAddCollabOpen}
       />

@@ -142,7 +142,8 @@ export default function CodeEditorPage() {
           name={name}
           language={language}
           onChange={(e) => setName(e.target.value)}
-          users={collaborators}
+          users={users}
+          collaborators={collaborators}
           onBlur={() => {
             const codeId = params.id;
 

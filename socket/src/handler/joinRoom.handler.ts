@@ -41,6 +41,16 @@ export function roomHandler(
     },
   );
 
+  socket.on("room:leave", async ({ roomId }: { roomId: string }) => {
+    await roomManager.leaveRoom(roomId, socket.id);
+
+    socket.leave(roomId);
+
+    socket.to(roomId).emit("room:user_leave", {
+      socketId: socket.id,
+    });
+  });
+
   socket.on("disconnecting", () => {
     void (async () => {
       for (const roomId of socket.rooms) {
