@@ -2,7 +2,11 @@ import { CollabRole, collabRoleOptions } from "@/types/CollabRole";
 import Dropdown from "../ui/Dropdown";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
-import { KeyboardEvent as ReactKeyboardEvent, useState } from "react";
+import {
+  KeyboardEvent as ReactKeyboardEvent,
+  SyntheticEvent,
+  useState,
+} from "react";
 import { useCollaboratorStore } from "@/store/useCollaboratorStore";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -53,8 +57,12 @@ export default function CollaboratorModal({
     setEmails((prev) => prev.filter((e) => e !== email));
   };
 
-  const handleAddCollaborator = async () => {
+  const handleAddCollaborator = async (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
     await addCollaborators({ codeId, collabEmails: emails, collabRole });
+
+    setEmails([]);
+    setEmailInput("");
   };
 
   return (
