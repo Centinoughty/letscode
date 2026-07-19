@@ -8,4 +8,5 @@ export const languageExtensions: Record<
   JAVASCRIPT: "js",
   PYTHON: "py",
   TYPESCRIPT: "ts",
+  JAVA: "java",
 };
