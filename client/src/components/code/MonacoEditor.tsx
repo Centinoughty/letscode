@@ -1,5 +1,6 @@
 import { Operation } from "@/lib/ot/operation";
 import { transformPendingQueue } from "@/lib/ot/transformPendingQueue";
+import { generateId } from "@/util/id";
 import { Editor } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
@@ -235,7 +236,7 @@ const MonacoEditor = forwardRef<MonacoEditorHandle, CodeEnvirmentProps>(
               }
 
               for (const change of event.changes) {
-                const operationId = crypto.randomUUID();
+                const operationId = generateId();
 
                 // Insert operation
                 if (change.rangeLength === 0 && change.text.length > 0) {
@@ -278,7 +279,7 @@ const MonacoEditor = forwardRef<MonacoEditorHandle, CodeEnvirmentProps>(
                 // Replace operation
                 if (change.rangeLength > 0 && change.text.length > 0) {
                   const deleteOp: Operation = {
-                    id: crypto.randomUUID(),
+                    id: generateId(),
                     roomId: currentRoomId,
                     userId: currentSocket.id!,
                     revision: revisionRef.current,
@@ -289,7 +290,7 @@ const MonacoEditor = forwardRef<MonacoEditorHandle, CodeEnvirmentProps>(
                   };
 
                   const insertOp: Operation = {
-                    id: crypto.randomUUID(),
+                    id: generateId(),
                     roomId: currentRoomId,
                     userId: currentSocket.id!,
                     revision: revisionRef.current,

@@ -11,7 +11,8 @@ const REFRESH_SECRET: Secret = env.REFRESH_SECRET as Secret;
 const REFRESH_EXPIRY: SignOptions["expiresIn"] =
   (env.REFRESH_EXPIRY as SignOptions["expiresIn"]) || "7d";
 
-const isProd = env.NODE_ENV === "production";
+// const isProd = env.NODE_ENV === "production";
+const isProd = false;     // dev env only, update it only if you have the https
 
 // sign access token
 export function signAccessToken(payload: AuthUser) {
