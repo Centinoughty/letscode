@@ -14,7 +14,7 @@ export function startServer() {
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: env.CLIENT_URL,
       credentials: true,
     }),
   );

@@ -12,7 +12,7 @@ export function initializeSocketServer() {
   const httpServer = createServer();
   const io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: env.CLIENT_URL,
       methods: ["GET", "POST"],
       credentials: true,
     },
