@@ -30,6 +30,8 @@ interface CodeState {
     code: string,
     stdin: string,
   ) => Promise<{ stdout: string; stderr: string }>;
+
+  reset: () => void;
 }
 
 export const useCodeStore = create<CodeState>((set) => ({
@@ -160,5 +162,14 @@ export const useCodeStore = create<CodeState>((set) => ({
       stdout: "",
       stderr: "Execution failed",
     };
+  },
+
+  reset: () => {
+    set({
+      codes: [],
+      hasFetched: false,
+      isLoading: false,
+      error: null,
+    });
   },
 }));

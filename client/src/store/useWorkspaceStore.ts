@@ -20,6 +20,8 @@ interface WorkspaceState {
   createWorkspace: (name: string) => Promise<void>;
   editWorkspace: (workspaceId: string, name: string) => Promise<void>;
   deleteWorkspace: (workspaceId: string) => Promise<void>;
+
+  reset: () => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
@@ -117,5 +119,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       console.log(error);
       set({ error: "error", isLoading: false });
     }
+  },
+
+  reset: () => {
+    set({
+      workspaces: [],
+      hasFetched: false,
+      isLoading: false,
+      error: null,
+    });
   },
 }));

@@ -1,6 +1,8 @@
 import { api } from "@/api/axios";
 import axios from "axios";
 import { create } from "zustand";
+import { useCodeStore } from "./useCodeStore";
+import { useWorkspaceStore } from "./useWorkspaceStore";
 
 interface User {
   name?: string;
@@ -201,6 +203,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       await api.post("/auth/logout");
+
+      useCodeStore.getState().reset();
+      useWorkspaceStore.getState().reset();
     } catch (error) {
       let message = "Something went wrong";
 
