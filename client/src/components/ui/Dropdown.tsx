@@ -1,7 +1,7 @@
 "use client";
 
 import { poppins } from "@/styles/font";
-import { ChevronUp } from "lucide-react";
+import { Check, ChevronUp, X } from "lucide-react";
 import { SelectHTMLAttributes, useState, useRef, useEffect } from "react";
 
 interface DropdownOption {
@@ -97,18 +97,29 @@ export default function Dropdown({
         </div>
 
         {isOpen && (
-          <div className="absolute top-full left-0 w-full mt-1 rounded-sm bg-white z-50 border border-gray-200 shadow-2xl max-h-60 overflow-y-auto">
+          <div
+            className="absolute top-full right-0 mt-1
+              min-w-full w-max
+              rounded-sm bg-white z-50
+              border border-gray-300 shadow-2xl
+              max-h-60 overflow-y-auto
+            "
+          >
             {options.map((option, idx) => (
               <div
                 key={idx}
                 onClick={() => handleSelect(option.value)}
-                className={`px-3 py-2 cursor-pointer ${
+                className={`pl-3 pr-6 py-2 grid grid-cols-[20px_1fr] gap-4 text-nowrap text-sm cursor-pointer ${
                   option.value === selectedValue
                     ? "bg-primary text-white"
                     : "hover:bg-gray-100"
                 }`}
               >
-                {option.label}
+                <div className="w-5">
+                  {option.value === selectedValue ? <Check /> : null}
+                </div>
+
+                <span>{option.label}</span>
               </div>
             ))}
           </div>

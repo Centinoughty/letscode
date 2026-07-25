@@ -13,5 +13,10 @@ export const AddCollaboratorBody = z.object({
     .default(CollabRole.VIEW),
 });
 
+export const CollabBody = z.object({
+  collabEmail: z.uuidv4(),
+});
+
 export type CodeParams = z.infer<typeof CodeParams>;
 export type AddCollaboratorBody = z.infer<typeof AddCollaboratorBody>;
+export type CollabBody = z.infer<typeof CollabBody>;

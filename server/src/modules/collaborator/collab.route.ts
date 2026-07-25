@@ -14,4 +14,12 @@ router.post(
   CollabController.addCollaborator,
 );
 
+router.delete(
+  "/:codeId/remove",
+  requireAuth,
+  validate(CollabSchema.CodeParams, "params"),
+  validate(CollabSchema.CollabBody),
+  CollabController.removeCollaborator,
+);
+
 export default router;

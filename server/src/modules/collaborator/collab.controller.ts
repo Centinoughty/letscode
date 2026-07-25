@@ -116,3 +116,86 @@ export async function addCollaborator(
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+export async function removeCollaborator(
+  req: TypedRequest<CollabSchema.CodeParams, CollabSchema.CollabBody, {}>,
+  res: Response,
+) {
+  try {
+    const { id: userId } = req.user!;
+    const { codeId } = req.params;
+    const { collabEmail } = req.body;
+
+    // verify owner or ADMIN collaborator access
+    const code = await prisma.code.findUnique({
+      where: { id: codeId },
+      include: {
+        collaborators: {
+          where: {
+            userId,
+            role: CollabRole.ADMIN,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    // check if code exists
+    if (!code || (code.ownerId !== userId && code.collaborators.length === 0)) {
+      return res.status(404).json({ message: "Code not found" });
+    }
+
+    // find user by email
+    const collaboratorUser = await prisma.user.findUnique({
+      where: {
+        email: collabEmail.toLowerCase(),
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!collaboratorUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // owner cannot be removed
+    if (collaboratorUser.id === code.ownerId) {
+      return res.status(400).json({
+        message: "Owner cannot be removed as collaborator",
+      });
+    }
+
+    // find collaborator entry
+    const collaborator = await prisma.codeCollaborator.findFirst({
+      where: {
+        codeId,
+        userId: collaboratorUser.id,
+      },
+    });
+
+    if (!collaborator) {
+      return res.status(404).json({
+        message: "Collaborator not found",
+      });
+    }
+
+    await prisma.codeCollaborator.delete({
+      where: {
+        id: collaborator.id,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Collaborator removed successfully",
+      email: collabEmail.toLowerCase(),
+    });
+  } catch (error) {
+    console.log("REMOVE_COLLABORATOR_ERROR", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}

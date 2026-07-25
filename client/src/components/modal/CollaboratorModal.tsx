@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { useCollaboratorStore } from "@/store/useCollaboratorStore";
-import { X } from "lucide-react";
+import { Trash, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Button from "../ui/Button";
 import { Collaborator } from "@/types/Collaborator";
@@ -73,10 +73,10 @@ export default function CollaboratorModal({
         title="Add collaborator"
       >
         <form onSubmit={handleAddCollaborator} className="flex flex-col gap-4">
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Input
               type="email"
-              placeholder="Add people by email"
+              placeholder="Type in emails to add"
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               onKeyDown={handleEmailKeyDown}
@@ -117,7 +117,7 @@ export default function CollaboratorModal({
             <p className="text-center text-gray-500">Share with someone</p>
           ) : (
             <>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-3">
                 {collaborators.map((item, idx) => (
                   <li
                     key={idx}
@@ -141,7 +141,7 @@ export default function CollaboratorModal({
                       </div>
                     </div>
 
-                    <div>
+                    <div className="flex justify-center items-center gap-2">
                       <Dropdown
                         value={item.role}
                         options={collabRoleOptions}
